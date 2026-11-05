@@ -1,0 +1,25 @@
+/* EXPECT: parses successfully (no syntax errors)
+   Every construct here is grammatical, but semantic analysis should
+   reject it: a void variable, a void parameter, returning a value from
+   a void function, a call with the wrong number of arguments, and
+   undeclared identifiers. Use this to confirm the parser doesn't do
+   semantic checks too early. */
+
+void v;
+
+int f(void p)
+{
+  return p;
+}
+
+void g(void)
+{
+  return 5;
+}
+
+void main(void)
+{
+  int x;
+  x = f(1, 2);
+  y = undefinedFn(x);
+}

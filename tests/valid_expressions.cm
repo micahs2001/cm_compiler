@@ -1,0 +1,43 @@
+/* EXPECT: valid
+   Stress test for expression parsing: precedence, redundant parentheses,
+   chained (right-associative) assignment, array elements as assignment
+   targets with complex index expressions, nested calls, zero-argument
+   calls, relops as expression statements and on the right of '=',
+   empty statements, a nested block with its own declarations,
+   and a bare 'return;'. */
+
+int g;
+int arr[10];
+
+int zero(void)
+{
+  return 0;
+}
+
+int add(int a, int b)
+{
+  return a + b;
+}
+
+void main(void)
+{
+  int x;
+  int y;
+  int z[5];
+
+  x = y = 3;
+  z[x - 1] = (x + 2) * y / 4 - 1;
+  z[z[zero()]] = add(x, add(y, 1));
+  arr[(x + y) * 2 - 10] = g = z[1] + arr[0];
+  x = ((((y))));
+  x == y;
+  ;
+  {
+    int w;
+    w = x * (y - (z[0] + 1)) / 2;
+    if (w >= 0)
+      return;
+  }
+  x = y < z[2];
+  output(add(arr[1], zero()) + 1 * 2 - 3 / 4);
+}

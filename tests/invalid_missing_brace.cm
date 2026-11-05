@@ -1,0 +1,16 @@
+/* EXPECT: syntax error
+   The while body's block is never closed, so the final '}' closes the
+   while block instead, and the function body runs into end of file.
+   Error at end of file (expected '}').
+   Good check that repeatUntil stops at EOF instead of looping forever. */
+
+int count(int n)
+{
+  int i;
+  i = 0;
+  while (i < n)
+  {
+    i = i + 1;
+
+  return i;
+}

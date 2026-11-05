@@ -1,0 +1,10 @@
+/* EXPECT: syntax error
+   The left side of '=' must be a var (ID or ID[expression]).
+   Error at '='. A parse-then-check parser reports an invalid assignment
+   target; a strictly grammar-driven one reports "expected ';'". */
+
+void main(void)
+{
+  int x;
+  x + 1 = 5;
+}

@@ -1,0 +1,9 @@
+/* EXPECT: syntax error
+   'void' meaning "no parameters" can't be followed by more parameters,
+   and as a type-specifier it would need an ID after it.
+   Error at ',' (expected ')' or an identifier). */
+
+int f(void, int x)
+{
+  return x;
+}

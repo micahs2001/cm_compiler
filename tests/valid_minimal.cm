@@ -1,0 +1,5 @@
+/* EXPECT: valid
+   Smallest legal program: one function, (void) params,
+   empty local-declarations and empty statement-list. */
+
+void main(void) { }

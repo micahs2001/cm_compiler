@@ -1,0 +1,6 @@
+/* EXPECT: syntax error
+   Array sizes must be a NUM literal, not an identifier or expression.
+   Error at the 'n' inside the brackets (expected a number). */
+
+int n;
+int a[n];

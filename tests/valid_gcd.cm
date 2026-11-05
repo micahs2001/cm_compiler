@@ -1,0 +1,25 @@
+/* EXPECT: valid
+   Recursion, if/else, return with an expression,
+   nested calls, input()/output(). */
+
+int mod(int a, int b)
+{
+  return a - a / b * b;
+}
+
+int gcd(int a, int b)
+{
+  if (b == 0)
+    return a;
+  else
+    return gcd(b, mod(a, b));
+}
+
+void main(void)
+{
+  int x;
+  int y;
+  x = input();
+  y = input();
+  output(gcd(x, y));
+}

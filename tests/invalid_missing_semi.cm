@@ -1,0 +1,10 @@
+/* EXPECT: syntax error
+   Missing ';' after "x = 5".
+   Error at the 'x' that starts the next statement (expected ';'). */
+
+void main(void)
+{
+  int x;
+  x = 5
+  x = x + 1;
+}

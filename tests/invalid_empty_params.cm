@@ -1,0 +1,13 @@
+/* EXPECT: syntax error
+   C- has no empty parameter list; "no parameters" must be written (void).
+   Error at the ')' in "f()" (expected 'int' or 'void'). */
+
+int f()
+{
+  return 0;
+}
+
+void main(void)
+{
+  f();
+}

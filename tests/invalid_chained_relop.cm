@@ -1,0 +1,12 @@
+/* EXPECT: syntax error
+   simple-expression allows at most one relational operator.
+   Error at the second '<' (expected ')').
+   Note: a parser that loops on relops with repeatWhile will wrongly
+   accept this file. */
+
+int inRange(int a, int b, int c)
+{
+  if (a < b < c)
+    return 1;
+  return 0;
+}

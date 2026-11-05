@@ -1,0 +1,11 @@
+/* EXPECT: syntax error
+   C- requires all local declarations at the top of a block.
+   Error at the second 'int' (not a valid start of a statement). */
+
+void main(void)
+{
+  int x;
+  x = 1;
+  int y;
+  y = x;
+}
