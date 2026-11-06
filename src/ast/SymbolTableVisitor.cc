@@ -8,6 +8,7 @@
 
 #include "SymbolTableVisitor.hh"
 
+// Temp fun for testing
 void
 printScopes (
   std::vector<std::unordered_map<std::string, Symbol>> vector_of_maps)
@@ -37,7 +38,11 @@ void
 SymbolTableVisitor::operator() (const VarDeclNode& node)
 {
   std::println ("Encountered a Var");
-  insertSymbol (node.identifier, &node);
+  if (not insertSymbol (node.identifier, &node))
+  {
+    throw InvalidTokenException ("Undeclared Variable");
+  }
+
   printScopes (scopeStack_);
 }
 
@@ -91,6 +96,33 @@ SymbolTableVisitor::operator() (const WhileStmtNode& node)
 }
 
 /*********************************************************************/
+// Use Nodes
+
+void
+SymbolTableVisitor::operator() (const VarExprNode& node)
+{
+  auto var = lookupSymbol (node.identifier);
+  if (var)
+  {
+    if (std::holds_alternative<const VarDeclNode*> (*var))
+      node.declNode = std::get<const VarDeclNode*> (*var);
+
+    else if (std::holds_alternative<const ParamDeclNode*> (*var))
+      node.declNode = std::get<const ParamDeclNode*> (*var);
+  }
+}
+
+void
+SymbolTableVisitor::operator() (const CallExprNode& node)
+{
+  auto var = lookupSymbol (node.identifier);
+  if (var)
+  {
+    node.declNode = std::get<const FunDeclNode*> (*var);
+  }
+}
+
+/*********************************************************************/
 //
 
 void
@@ -111,9 +143,19 @@ SymbolTableVisitor::insertSymbol (const std::string& name, Symbol sym)
   return scopeStack_.back ().insert ({ name, sym }).second;
 }
 
-std::optional<Symbol>
+const std::optional<Symbol>
 SymbolTableVisitor::lookupSymbol (const std::string& name) const
 {
+  // Walk scope vector in reverse
+  for (const auto& sco : std::views::reverse (scopeStack_))
+  {
+    // Look for var name in each scope
+    if (sco.find (name) not_eq sco.end ())
+    {
+      // Return once found
+      return sco.at (name);
+    }
+  }
   return {};
 }
 

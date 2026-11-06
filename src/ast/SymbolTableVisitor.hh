@@ -6,6 +6,7 @@
 #include <variant>
 #include <vector>
 
+#include "Ast.hh"
 #include "Visitor.hh"
 
 // Symbols stored in the table (Variables, Parameters, Functions).
@@ -32,6 +33,12 @@ public:
   void
   operator() (const WhileStmtNode& node) override;
 
+  void
+  operator() (const VarExprNode& node) override;
+
+  void
+  operator() (const CallExprNode& node) override;
+
 private:
   void
   enterScope ();
@@ -42,7 +49,7 @@ private:
   bool
   insertSymbol (const std::string& name, Symbol sym);
 
-  std::optional<Symbol>
+  const std::optional<Symbol>
   lookupSymbol (const std::string& name) const;
 
 private:

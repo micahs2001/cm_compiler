@@ -17,7 +17,7 @@
 #include "PrintVisitor.hh"
 
 /*****************************************************************************/
-// Parser Class Implementation
+// Print Visitor Class Implementation
 
 PrintVisitor::PrintVisitor (std::ostream& out)
     : out_ (out)

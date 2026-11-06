@@ -13,6 +13,7 @@
 #pragma once
 
 #include "Ast.hh"
+#include "exceptions/Exceptions.hh"
 
 /*****************************************************************************/
 // Visitor Class Definition

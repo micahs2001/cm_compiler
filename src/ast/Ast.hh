@@ -32,7 +32,8 @@ using AstNodePtr = std::unique_ptr<struct AstNode>;
 
 // Symbol reference for variable usage.
 // Can point to a local/global or parameter.
-using VarDeclSymbol = std::variant<VarDeclNode*, ParamDeclNode*>;
+using VarDeclSymbol = std::variant<const VarDeclNode*, const ParamDeclNode*>;
+using FunDeclSymbol = const FunDeclNode*;
 
 enum class TypeSpecifier
 {
@@ -120,7 +121,7 @@ struct VarExprNode
   std::string identifier;
   AstNodePtr index { nullptr };
   // Attached by SymbolTableVisitor.
-  VarDeclSymbol declNode;
+  mutable VarDeclSymbol declNode;
 };
 
 struct CallExprNode
@@ -128,7 +129,7 @@ struct CallExprNode
   std::string identifier;
   std::vector<AstNodePtr> args;
   // Attached by SymbolTableVisitor.
-  FunDeclNode* declNode { nullptr };
+  mutable FunDeclSymbol declNode;
 };
 
 struct NumExprNode
