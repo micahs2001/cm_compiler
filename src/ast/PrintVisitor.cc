@@ -176,7 +176,9 @@ PrintVisitor::operator() (const BinaryExprNode& node)
 void
 PrintVisitor::operator() (const VarExprNode& node)
 {
-  printLine ("VarExprNode: {}", node.identifier);
+  auto type =
+    std::visit ([&] (const auto& node) { return node->type; }, node.declNode);
+  printLine ("VarExprNode: {} ({})", node.identifier, typeSpecToString (type));
   if (node.index)
   {
     ++depth_;
@@ -190,7 +192,9 @@ PrintVisitor::operator() (const VarExprNode& node)
 void
 PrintVisitor::operator() (const CallExprNode& node)
 {
-  printLine ("CallExprNode: {}", node.identifier);
+  printLine ("CallExprNode: {} ({})",
+             node.identifier,
+             typeSpecToString (node.declNode->returnType));
   ++depth_;
   printLine ("Args:");
   ++depth_;

@@ -6,6 +6,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include "Ast.hh"
 #include "SymbolTableVisitor.hh"
 
 // Temp fun for testing
@@ -29,6 +30,10 @@ printScopes (
 SymbolTableVisitor::SymbolTableVisitor ()
     : scopeStack_ (std::vector<std::unordered_map<std::string, Symbol>> (1))
 {
+  inputDecl_.returnType = TypeSpecifier::Void;
+  outputDecl_.returnType = TypeSpecifier::Void;
+  insertSymbol ("input", &inputDecl_);
+  insertSymbol ("output", &outputDecl_);
 }
 
 /*********************************************************************/
@@ -110,6 +115,8 @@ SymbolTableVisitor::operator() (const VarExprNode& node)
     else if (std::holds_alternative<const ParamDeclNode*> (*var))
       node.declNode = std::get<const ParamDeclNode*> (*var);
   }
+
+  Visitor::operator() (node);
 }
 
 void
@@ -120,6 +127,8 @@ SymbolTableVisitor::operator() (const CallExprNode& node)
   {
     node.declNode = std::get<const FunDeclNode*> (*var);
   }
+
+  Visitor::operator() (node);
 }
 
 /*********************************************************************/

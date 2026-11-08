@@ -64,7 +64,10 @@ main (int argc, char* argv[])
 
   SymbolTableVisitor prtvisit;
   prtvisit.visit (root);
-  // printAstFile (root, filename);
+
+  PrintVisitor vsr2 (std::cout);
+  vsr2.visit (root);
+  printAstFile (root, filename);
 }
 
 /*****************************************************************************/
