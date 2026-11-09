@@ -213,7 +213,7 @@ template<typename... Args>
 void
 PrintVisitor::printLine (std::format_string<Args...> fmt, Args&&... args)
 {
-  for (int _ : std::views::iota (0u, (unsigned) depth_))
+  for (unsigned _ : std::views::iota (0u, depth_))
   {
     out_ << "  ";
   }

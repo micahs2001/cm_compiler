@@ -82,5 +82,5 @@ private:
   typeSpecToString (TypeSpecifier type);
 
   std::ostream& out_;
-  int depth_ { 0 };
+  unsigned depth_ { 0 };
 };

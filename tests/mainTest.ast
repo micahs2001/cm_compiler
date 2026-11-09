@@ -1,0 +1,11 @@
+ProgramNode:
+  FunDeclNode: void main
+    Params:
+    Body:
+      CompoundStmtNode:
+        Local Decls:
+          VarDeclNode: int size
+          VarDeclNode: int i
+          VarDeclNode: int num
+          VarDeclNode: int size
+        Statements:

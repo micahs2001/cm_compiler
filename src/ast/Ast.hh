@@ -6,6 +6,7 @@
 #include <variant>
 #include <vector>
 
+#include "tokenizing/SourceLocation.hh"
 #include "tokenizing/Token.hh"
 // #include <llvm/IR/Value.h>
 namespace llvm
@@ -35,7 +36,7 @@ using AstNodePtr = std::unique_ptr<struct AstNode>;
 using VarDeclSymbol = std::variant<const VarDeclNode*, const ParamDeclNode*>;
 using FunDeclSymbol = const FunDeclNode*;
 
-enum class TypeSpecifier
+enum class TypeSpecifier : uint8_t
 {
   Int,
   Void
@@ -156,13 +157,26 @@ using NodeVariant = std::variant<ProgramNode,
 struct AstNode
 {
   NodeVariant data;
+  SourceLocation location;
 
   template<typename T>
+    requires (!std::derived_from<std::decay_t<T>, NodeVariant>)
   explicit AstNode (T&& val)
       : data (std::forward<T> (val))
   {
   }
 };
+
+// New node constructing function for source locations (line, col)
+// *See src/tokenizing/SourceLocation.hh*
+template<typename T, typename... Args>
+AstNodePtr
+makeAstNode (SourceLocation location, Args&&... args)
+{
+  auto node = std::make_unique<AstNode> (T { std::forward<Args> (args)... });
+  node->location = location;
+  return node;
+}
 
 template<typename T, typename... Args>
 AstNodePtr

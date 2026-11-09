@@ -67,6 +67,24 @@ test: $(EXEC)
 
 #############################################################
 
+.PHONY : lint
+lint:
+	@echo "Starting linter... Writing results to lint_report.txt"
+	@rm -f lint_report.txt
+	@echo "Clang-Tidy Report" > lint_report.txt
+	@echo "=================" >> lint_report.txt
+	@total=$$(echo "$(SRCS)" | wc -w); \
+	count=0; \
+	for file in $(SRCS); do \
+		count=$$((count + 1)); \
+		echo "[$$count/$$total] Processing $$file"; \
+		echo "" >> lint_report.txt; \
+		echo "--- File: $$file ---" >> lint_report.txt; \
+		clang-tidy "$$file" -- $(CXXFLAGS) >> lint_report.txt 2>&1 || true; \
+	done
+
+#############################################################
+
 .PHONY : clean
 clean :
 	$(RM) $(EXEC) a.out core

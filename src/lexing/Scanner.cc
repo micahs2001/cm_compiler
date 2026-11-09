@@ -23,9 +23,10 @@ Scanner::scanNext ()
   skipWhitespaceAndComments ();
   if (peek () == EOF)
   {
-    return Token { TokenType::EndOfFile, "", line_, column_ };
+    return Token { TokenType::EndOfFile, "", location_ };
   }
 
+  const SourceLocation start = location_;
   int c = peek ();
   if (isLetter (c))
   {
@@ -40,68 +41,68 @@ Scanner::scanNext ()
   switch (c)
   {
     case '+':
-      return Token { TokenType::Plus, "+", line_, column_ };
+      return Token { TokenType::Plus, "+", start };
     case '-':
-      return Token { TokenType::Minus, "-", line_, column_ };
+      return Token { TokenType::Minus, "-", start };
     case '*':
-      return Token { TokenType::Multiply, "*", line_, column_ };
+      return Token { TokenType::Multiply, "*", start };
     case '/':
-      return Token { TokenType::Divide, "/", line_, column_ };
+      return Token { TokenType::Divide, "/", start };
     case '<':
     {
       if (peek () == '=')
       {
         advance ();
-        return Token { TokenType::LessEqual, "<=", line_, column_ };
+        return Token { TokenType::LessEqual, "<=", start };
       }
-      return Token { TokenType::Less, "<", line_, column_ };
+      return Token { TokenType::Less, "<", start };
     }
     case '>':
     {
       if (peek () == '=')
       {
         advance ();
-        return Token { TokenType::GreaterEqual, ">=", line_, column_ };
+        return Token { TokenType::GreaterEqual, ">=", start };
       }
-      return Token { TokenType::Greater, ">", line_, column_ };
+      return Token { TokenType::Greater, ">", start };
     }
     case '=':
     {
       if (peek () == '=')
       {
         advance ();
-        return Token { TokenType::Equal, "==", line_, column_ };
+        return Token { TokenType::Equal, "==", start };
       }
-      return Token { TokenType::Assign, "=", line_, column_ };
+      return Token { TokenType::Assign, "=", start };
     }
     case '!':
     {
       if (peek () == '=')
       {
         advance ();
-        return Token { TokenType::NotEqual, "!=", line_, column_ };
+        return Token { TokenType::NotEqual, "!=", start };
       }
       break;
     }
     case ';':
-      return Token { TokenType::Semi, ";", line_, column_ };
+      return Token { TokenType::Semi, ";", start };
     case ',':
-      return Token { TokenType::Comma, ",", line_, column_ };
+      return Token { TokenType::Comma, ",", start };
     case '(':
-      return Token { TokenType::LParen, "(", line_, column_ };
+      return Token { TokenType::LParen, "(", start };
     case ')':
-      return Token { TokenType::RParen, ")", line_, column_ };
+      return Token { TokenType::RParen, ")", start };
     case '[':
-      return Token { TokenType::LBrack, "[", line_, column_ };
+      return Token { TokenType::LBrack, "[", start };
     case ']':
-      return Token { TokenType::RBrack, "]", line_, column_ };
+      return Token { TokenType::RBrack, "]", start };
     case '{':
-      return Token { TokenType::LBrace, "{", line_, column_ };
+      return Token { TokenType::LBrace, "{", start };
     case '}':
-      return Token { TokenType::RBrace, "}", line_, column_ };
+      return Token { TokenType::RBrace, "}", start };
   }
   return Token {
-    TokenType::Error, std::string (1, static_cast<char> (c)), line_, column_
+    TokenType::Error, std::string (1, static_cast<char> (c)), start
   };
 }
 
@@ -123,7 +124,15 @@ Scanner::advance ()
 {
   int c = peek ();
   ++cursor_;
-  ++column_;
+  if (c == '\n')
+  {
+    ++location_.line;
+    location_.column = 1;
+  }
+  else
+  {
+    ++location_.column;
+  }
   return c;
 }
 
@@ -138,12 +147,6 @@ Scanner::lookAhead ()
   {
     return EOF;
   }
-}
-
-bool
-Scanner::isVerticalSpace (int c)
-{
-  return (c > 9 && c < 14);
 }
 
 bool
@@ -167,11 +170,6 @@ Scanner::skipWhitespaceAndComments ()
     int c = peek ();
     if (c != EOF && std::isspace (static_cast<char> (c)))
     {
-      if (isVerticalSpace (c))
-      {
-        ++line_;
-        column_ = 0;
-      }
       advance ();
     }
     // Skip comments starting with /* and ending with */
@@ -205,8 +203,8 @@ Scanner::skipCommentBlock ()
 Token
 Scanner::scanIdentifier ()
 {
+  SourceLocation start = location_;
   std::string s;
-  size_t curCol = column_;
   while (peek () != EOF && isLetter (peek ()))
   {
     s += static_cast<char> (advance ());
@@ -217,27 +215,27 @@ Scanner::scanIdentifier ()
   {
     if (s == keywords[i])
     {
-      return Token { TokenType (i), s, line_, curCol };
+      return Token { TokenType (i), s, start };
     }
   }
-  return Token { TokenType::Id, s, line_, curCol };
+  return Token { TokenType::Id, s, start };
 }
 
 Token
 Scanner::scanNumber ()
 {
+  SourceLocation start = location_;
   std::string s;
-  size_t curCol = column_;
   while (peek () != EOF && isNumber (peek ()))
   {
     s += static_cast<char> (advance ());
   }
-  return Token { TokenType::Num, s, line_, curCol };
+  return Token { TokenType::Num, s, start };
 }
 
 void
 Scanner::putBack ()
 {
   --cursor_;
-  --column_;
+  --location_.column;
 }

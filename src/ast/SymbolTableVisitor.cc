@@ -2,12 +2,14 @@
 #include <iostream>
 #include <optional>
 #include <print>
+#include <ranges>
 #include <string>
 #include <unordered_map>
 #include <vector>
 
 #include "Ast.hh"
 #include "SymbolTableVisitor.hh"
+#include "exceptions/Exceptions.hh"
 
 // Temp fun for testing
 void
@@ -45,7 +47,8 @@ SymbolTableVisitor::operator() (const VarDeclNode& node)
   std::println ("Encountered a Var");
   if (not insertSymbol (node.identifier, &node))
   {
-    throw InvalidTokenException ("Undeclared Variable");
+    throw SemanticErrorException ("Previously Declared Variable",
+                                  currentLocation ());
   }
 
   printScopes (scopeStack_);
@@ -137,7 +140,7 @@ SymbolTableVisitor::operator() (const CallExprNode& node)
 void
 SymbolTableVisitor::enterScope ()
 {
-  scopeStack_.push_back (std::unordered_map<std::string, Symbol> {});
+  scopeStack_.emplace_back ();
 }
 
 void

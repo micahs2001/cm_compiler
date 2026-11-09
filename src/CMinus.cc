@@ -17,6 +17,7 @@
 #include <fstream>
 #include <iostream>
 #include <print>
+#include <ranges>
 #include <string>
 
 /*****************************************************************************/
@@ -41,6 +42,9 @@ AstNodePtr
 parseTokens (Scanner scanner, unsigned flagDigit);
 
 void
+attachSymbols (const AstNodePtr& node);
+
+void
 printAstFile (const AstNodePtr& node, std::string& filename);
 
 /*****************************************************************************/
@@ -61,12 +65,8 @@ main (int argc, char* argv[])
 
   // Tree is printed to file by default right now.
   // Later will be producible with flag
+  attachSymbols (root);
 
-  SymbolTableVisitor prtvisit;
-  prtvisit.visit (root);
-
-  PrintVisitor vsr2 (std::cout);
-  vsr2.visit (root);
   printAstFile (root, filename);
 }
 
@@ -212,6 +212,20 @@ parseTokens (Scanner scanner, unsigned flagDigit)
   return nullptr;
 }
 
+void
+attachSymbols (const AstNodePtr& node)
+{
+  try
+  {
+    SymbolTableVisitor visitor;
+    visitor.visit (node);
+  }
+  catch (SemanticErrorException& e)
+  {
+    std::println ("{}", e.what ());
+  }
+}
+
 // Given an input AST root node and filename,
 //  Print AST to filename.ast
 void
@@ -221,7 +235,14 @@ printAstFile (const AstNodePtr& node, std::string& filename)
   {
     replaceExt (filename);
     std::ofstream outFile (filename);
-    PrintVisitor prtvisit (outFile);
-    prtvisit.visit (node);
+    try
+    {
+      PrintVisitor prtvisit (outFile);
+      prtvisit.visit (node);
+    }
+    catch (SemanticErrorException& e)
+    {
+      std::println ("{}", e.what ());
+    }
   }
 }

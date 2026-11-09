@@ -14,13 +14,26 @@
 /*****************************************************************************/
 // Parser Class Implementation
 
-Visitor::Visitor () {}
+Visitor::Visitor () = default;
 
 void
 Visitor::visit (const AstNodePtr& node)
 {
   if (!node)
     return;
+
+  const SourceLocation previousLocation = currentLocation_;
+
+  // Save location of caller
+  // Destructing restore struct restores previous position
+  currentLocation_ = node->location;
+  struct LocationRestore
+  {
+    SourceLocation& current;
+    SourceLocation previous;
+    ~LocationRestore () { current = previous; }
+  } restore { .current = currentLocation_, .previous = previousLocation };
+
   std::visit (*this, node->data);
 }
 

@@ -46,8 +46,8 @@ Parser::printTokens (std::ostream& out)
     out << std::format ("{:<16}{:<17}({},{})\n",
                         tokenToString (token.type),
                         token.lexeme,
-                        token.line,
-                        token.column);
+                        token.location.line,
+                        token.location.column);
   }
 }
 
@@ -58,7 +58,7 @@ Parser::advance ()
   toks_.push_back (save);
   current_ = scanner_.scanNext ();
   if (check (TokenType::Error))
-    throw InvalidTokenException ("Invalid Token");
+    throw InvalidTokenException ("Invalid Token", current_.location);
   return save;
 }
 
@@ -68,7 +68,7 @@ Parser::match (TokenType expected)
   if (!check (expected))
   {
     throw InvalidSyntaxException (
-      current_.line, current_.column, { expected }, current_.lexeme);
+      current_.location, { expected }, current_.lexeme);
     return Token ();
   }
   return advance ();
@@ -105,25 +105,28 @@ Parser::repeatWhile (Fun rule, std::initializer_list<TokenType> first)
 AstNodePtr
 Parser::parseProgram ()
 {
+  const SourceLocation start = current_.location;
   std::vector<AstNodePtr> decls;
   decls.push_back (parseDecl ());
   repeatUntil ([this, &decls] { decls.push_back (parseDecl ()); },
                { TokenType::EndOfFile });
-  return makeAstNode<ProgramNode> (std::move (decls));
+  return makeAstNode<ProgramNode> (start, std::move (decls));
 }
 
 AstNodePtr
 Parser::parseDecl ()
 {
   TypeSpecifier ty = parseTypeSpec ();
-  std::string idName = match (TokenType::Id).lexeme;
+  Token identifier = match (TokenType::Id);
+  std::string idName = identifier.lexeme;
 
   switch (current_.type)
   {
     case TokenType::Semi:
     {
       match (TokenType::Semi);
-      return makeAstNode<VarDeclNode> (ty, std::move (idName));
+      return makeAstNode<VarDeclNode> (
+        identifier.location, ty, std::move (idName));
     }
     case TokenType::LBrack:
     {
@@ -131,7 +134,8 @@ Parser::parseDecl ()
       int arraySize = std::stoi (match (TokenType::Num).lexeme);
       match (TokenType::RBrack);
       match (TokenType::Semi);
-      return makeAstNode<VarDeclNode> (ty, std::move (idName), arraySize);
+      return makeAstNode<VarDeclNode> (
+        identifier.location, ty, std::move (idName), arraySize);
     }
     case TokenType::LParen:
     {
@@ -140,13 +144,13 @@ Parser::parseDecl ()
       match (TokenType::RParen);
       AstNodePtr cmpstmt = parseCompoundStmt ();
       return makeAstNode<FunDeclNode> (
+        identifier.location,
         ty, std::move (idName), std::move (params), std::move (cmpstmt));
     }
     default:
     {
       throw InvalidSyntaxException (
-        current_.line,
-        current_.column,
+        current_.location,
         { TokenType::Semi, TokenType::LBrack, TokenType::LParen },
         current_.lexeme);
     }
@@ -157,14 +161,16 @@ AstNodePtr
 Parser::parseVarDeclaration ()
 {
   TypeSpecifier ty = parseTypeSpec ();
-  std::string idName = match (TokenType::Id).lexeme;
+  Token identifier = match (TokenType::Id);
+  std::string idName = identifier.lexeme;
 
   switch (current_.type)
   {
     case TokenType::Semi:
     {
       match (TokenType::Semi);
-      return makeAstNode<VarDeclNode> (ty, std::move (idName));
+      return makeAstNode<VarDeclNode> (
+        identifier.location, ty, std::move (idName));
     }
     case TokenType::LBrack:
     {
@@ -172,12 +178,12 @@ Parser::parseVarDeclaration ()
       int arraySize = std::stoi (match (TokenType::Num).lexeme);
       match (TokenType::RBrack);
       match (TokenType::Semi);
-      return makeAstNode<VarDeclNode> (ty, std::move (idName), arraySize);
+      return makeAstNode<VarDeclNode> (
+        identifier.location, ty, std::move (idName), arraySize);
     }
     default:
     {
-      throw InvalidSyntaxException (current_.line,
-                                    current_.column,
+      throw InvalidSyntaxException (current_.location,
                                     { TokenType::Semi, TokenType::LBrack },
                                     current_.lexeme);
     }
@@ -196,8 +202,7 @@ Parser::parseTypeSpec ()
       match (TokenType::Void);
       return TypeSpecifier::Void;
     default:
-      throw InvalidSyntaxException (current_.line,
-                                    current_.column,
+      throw InvalidSyntaxException (current_.location,
                                     { TokenType::Int, TokenType::Void },
                                     current_.lexeme);
   }
@@ -214,7 +219,8 @@ Parser::parseFullParams ()
     // If "void" is at the end of params
     if (check (TokenType::RParen))
       return params;
-    std::string idName = match (TokenType::Id).lexeme;
+    Token identifier = match (TokenType::Id);
+    std::string idName = identifier.lexeme;
     if (check (TokenType::LBrack))
     {
       match (TokenType::LBrack);
@@ -222,7 +228,7 @@ Parser::parseFullParams ()
       isArray = true;
     }
     params.push_back (makeAstNode<ParamDeclNode> (
-      TypeSpecifier::Void, std::move (idName), isArray));
+      identifier.location, TypeSpecifier::Void, std::move (idName), isArray));
   }
   else
     params.push_back (parseParam ());
@@ -242,19 +248,22 @@ Parser::parseParam ()
 {
   bool isArray { false };
   TypeSpecifier ty = parseTypeSpec ();
-  std::string idName = match (TokenType::Id).lexeme;
+  Token identifier = match (TokenType::Id);
+  std::string idName = identifier.lexeme;
   if (check (TokenType::LBrack))
   {
     match (TokenType::LBrack);
     match (TokenType::RBrack);
     isArray = true;
   }
-  return makeAstNode<ParamDeclNode> (ty, std::move (idName), isArray);
+  return makeAstNode<ParamDeclNode> (
+    identifier.location, ty, std::move (idName), isArray);
 }
 
 AstNodePtr
 Parser::parseCompoundStmt ()
 {
+  const SourceLocation start = current_.location;
   match (TokenType::LBrace);
   std::vector<AstNodePtr> localDecls;
   repeatWhile ([this, &localDecls]
@@ -264,7 +273,7 @@ Parser::parseCompoundStmt ()
   repeatUntil ([this, &stmtList] { stmtList.push_back (parseStatement ()); },
                { TokenType::RBrace });
   match (TokenType::RBrace);
-  return makeAstNode<CompoundStmtNode> (std::move (localDecls),
+  return makeAstNode<CompoundStmtNode> (start, std::move (localDecls),
                                         std::move (stmtList));
 }
 
@@ -287,8 +296,7 @@ Parser::parseStatement ()
     case TokenType::Return:
       return parseReturnStmt ();
     default:
-      throw InvalidSyntaxException (current_.line,
-                                    current_.column,
+      throw InvalidSyntaxException (current_.location,
                                     { TokenType::Semi,
                                       TokenType::LParen,
                                       TokenType::Id,
@@ -304,6 +312,7 @@ Parser::parseStatement ()
 AstNodePtr
 Parser::parseExpressionStmt ()
 {
+  const SourceLocation start = current_.location;
   AstNodePtr exp;
   switch (current_.type)
   {
@@ -316,18 +325,18 @@ Parser::parseExpressionStmt ()
       break;
     default:
       throw InvalidSyntaxException (
-        current_.line,
-        current_.column,
+        current_.location,
         { TokenType::Semi, TokenType::LParen, TokenType::Id, TokenType::Num },
         current_.lexeme);
   }
   match (TokenType::Semi);
-  return makeAstNode<ExprStmtNode> (std::move (exp));
+  return makeAstNode<ExprStmtNode> (start, std::move (exp));
 }
 
 AstNodePtr
 Parser::parseSelectionStmt ()
 {
+  const SourceLocation start = current_.location;
   match (TokenType::If);
   match (TokenType::LParen);
   AstNodePtr condition = parseExpression ();
@@ -340,29 +349,32 @@ Parser::parseSelectionStmt ()
     elseStmt = parseStatement ();
   }
   return makeAstNode<IfStmtNode> (
-    std::move (condition), std::move (thenStmt), std::move (elseStmt));
+    start, std::move (condition), std::move (thenStmt), std::move (elseStmt));
 }
 
 AstNodePtr
 Parser::parseIterationStmt ()
 {
+  const SourceLocation start = current_.location;
   match (TokenType::While);
   match (TokenType::LParen);
   AstNodePtr condition = parseExpression ();
   match (TokenType::RParen);
   AstNodePtr body = parseStatement ();
-  return makeAstNode<WhileStmtNode> (std::move (condition), std::move (body));
+  return makeAstNode<WhileStmtNode> (
+    start, std::move (condition), std::move (body));
 }
 
 AstNodePtr
 Parser::parseReturnStmt ()
 {
+  const SourceLocation start = current_.location;
   AstNodePtr expr;
   match (TokenType::Return);
   if (!check (TokenType::Semi))
     expr = parseExpression ();
   match (TokenType::Semi);
-  return makeAstNode<ReturnStmtNode> (std::move (expr));
+  return makeAstNode<ReturnStmtNode> (start, std::move (expr));
 }
 
 AstNodePtr
@@ -372,7 +384,8 @@ Parser::parseExpression ()
   // If assignExpr or first factor is callExpr or varExpr
   if (check (TokenType::Id))
   {
-    std::string idName = match (TokenType::Id).lexeme;
+    Token identifier = match (TokenType::Id);
+    std::string idName = identifier.lexeme;
 
     // If <var>
     // Parse and return Assignment exp or set factor = <var>
@@ -386,14 +399,16 @@ Parser::parseExpression ()
         match (TokenType::RBrack);
       }
       // Roll <var> into factor
-      leftTree =
-        makeAstNode<VarExprNode> (std::move (idName), std::move (varIndex));
+      leftTree = makeAstNode<VarExprNode> (
+        identifier.location, std::move (idName), std::move (varIndex));
       // If assign expr
       if (check (TokenType::Assign))
       {
         match (TokenType::Assign);
         AstNodePtr assignExpr = parseExpression ();
-        return makeAstNode<AssignExprNode> (std::move (leftTree),
+        const SourceLocation assignmentLocation = leftTree->location;
+        return makeAstNode<AssignExprNode> (assignmentLocation,
+                                            std::move (leftTree),
                                             std::move (assignExpr));
       }
     }
@@ -403,8 +418,8 @@ Parser::parseExpression ()
       match (TokenType::LParen);
       std::vector<AstNodePtr> args = parseArgs ();
       match (TokenType::RParen);
-      leftTree =
-        makeAstNode<CallExprNode> (std::move (idName), std::move (args));
+      leftTree = makeAstNode<CallExprNode> (
+        identifier.location, std::move (idName), std::move (args));
     }
   }
   else
@@ -417,10 +432,13 @@ Parser::parseExpression ()
     [this, &leftTree]
     {
       // Build tree for first term
-      TokenType op = match (current_.type).type;
+      Token operatorToken = match (current_.type);
       AstNodePtr rightTree = parseFactor ();
       leftTree = makeAstNode<BinaryExprNode> (
-        op, std::move (leftTree), std::move (rightTree));
+        operatorToken.location,
+        operatorToken.type,
+        std::move (leftTree),
+        std::move (rightTree));
     },
     { TokenType::Multiply, TokenType::Divide });
 
@@ -428,20 +446,26 @@ Parser::parseExpression ()
     [this, &leftTree]
     {
       // Build tree for first additive expression
-      TokenType op = match (current_.type).type;
+      Token operatorToken = match (current_.type);
       AstNodePtr rightTree = parseTerm ();
       leftTree = makeAstNode<BinaryExprNode> (
-        op, std::move (leftTree), std::move (rightTree));
+        operatorToken.location,
+        operatorToken.type,
+        std::move (leftTree),
+        std::move (rightTree));
     },
     { TokenType::Plus, TokenType::Minus });
 
   // Attach right side additive expression if relop is seen
   if (isRelop ())
   {
-    TokenType op = match (current_.type).type;
+    Token operatorToken = match (current_.type);
     AstNodePtr rightTree = parseAdditiveExpr ();
     leftTree = makeAstNode<BinaryExprNode> (
-      op, std::move (leftTree), std::move (rightTree));
+      operatorToken.location,
+      operatorToken.type,
+      std::move (leftTree),
+      std::move (rightTree));
   }
   return leftTree;
 }
@@ -461,10 +485,13 @@ Parser::parseAdditiveExpr ()
   repeatWhile (
     [this, &leftTree]
     {
-      TokenType op = match (current_.type).type;
+      Token operatorToken = match (current_.type);
       AstNodePtr rightTree = parseTerm ();
       leftTree = makeAstNode<BinaryExprNode> (
-        op, std::move (leftTree), std::move (rightTree));
+        operatorToken.location,
+        operatorToken.type,
+        std::move (leftTree),
+        std::move (rightTree));
     },
     { TokenType::Plus, TokenType::Minus });
   return leftTree;
@@ -477,10 +504,13 @@ Parser::parseTerm ()
   repeatWhile (
     [this, &leftTree]
     {
-      TokenType op = match (current_.type).type;
+      Token operatorToken = match (current_.type);
       AstNodePtr rightTree = parseFactor ();
       leftTree = makeAstNode<BinaryExprNode> (
-        op, std::move (leftTree), std::move (rightTree));
+        operatorToken.location,
+        operatorToken.type,
+        std::move (leftTree),
+        std::move (rightTree));
     },
     { TokenType::Multiply, TokenType::Divide });
   return leftTree;
@@ -500,12 +530,14 @@ Parser::parseFactor ()
     }
     case TokenType::Num:
     {
-      int value = std::stoi (match (TokenType::Num).lexeme);
-      return makeAstNode<NumExprNode> (value);
+      Token number = match (TokenType::Num);
+      int value = std::stoi (number.lexeme);
+      return makeAstNode<NumExprNode> (number.location, value);
     }
     case TokenType::Id:
     {
-      std::string idName = match (TokenType::Id).lexeme;
+      Token identifier = match (TokenType::Id);
+      std::string idName = identifier.lexeme;
       switch (current_.type)
       {
         case TokenType::LBrack:
@@ -515,7 +547,8 @@ Parser::parseFactor ()
           AstNodePtr varIndex;
           varIndex = parseExpression ();
           match (TokenType::RBrack);
-          return makeAstNode<VarExprNode> (std::move (idName),
+          return makeAstNode<VarExprNode> (identifier.location,
+                                           std::move (idName),
                                            std::move (varIndex));
         }
         // Call Factor
@@ -524,18 +557,19 @@ Parser::parseFactor ()
           match (TokenType::LParen);
           std::vector<AstNodePtr> args = parseArgs ();
           match (TokenType::RParen);
-          return makeAstNode<CallExprNode> (std::move (idName),
+          return makeAstNode<CallExprNode> (identifier.location,
+                                            std::move (idName),
                                             std::move (args));
         }
         default:
           // Var Factor without index
-          return makeAstNode<VarExprNode> (std::move (idName));
+          return makeAstNode<VarExprNode> (identifier.location,
+                                           std::move (idName));
       }
     }
     break;
     default:
-      throw InvalidSyntaxException (current_.line,
-                                    current_.column,
+      throw InvalidSyntaxException (current_.location,
                                     {
                                       TokenType::LParen,
                                       TokenType::Id,

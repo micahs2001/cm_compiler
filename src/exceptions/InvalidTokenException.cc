@@ -1,11 +1,12 @@
-#include <stdexcept>
+#include "InvalidTokenException.hh"
 
-class InvalidTokenException : public std::runtime_error
+InvalidTokenException::InvalidTokenException (const std::string& message)
+    : CompilerException (message)
 {
-public:
-  // Pass the message to the base class constructor
-  explicit InvalidTokenException (const std::string& message)
-      : std::runtime_error (message)
-  {
-  }
-};
+}
+
+InvalidTokenException::InvalidTokenException (const std::string& message,
+                                             SourceLocation location)
+    : CompilerException (message, location)
+{
+}

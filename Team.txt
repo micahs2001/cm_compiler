@@ -2,6 +2,17 @@ Team Members:  Micah Schafer,
                Micah's Left Brain,
                Micah's Right Brain
 
+###########################################################################
+# Non-lab-related changes
+###########################################################################
+
+- Adjusted scanner to output correct locations by capturing location at
+correct time.
+
+###########################################################################
+# Implementation Issues and Solutions
+###########################################################################
+
 - Visitor Duplication:
      I realized that any individual visitor would need to duplicate transition logic for every node as-is.
      To address this, I created a virtual parent Visitor class. Any visitor (Print, SymbolTable, etc.) will
@@ -40,3 +51,33 @@ Team Members:  Micah Schafer,
      Eventually, I decided to attempt to solve this by mirroring the VarSymbol use with FunSymbol:
      using FunDeclSymbol = const FunDeclNode*;
      This allowed combining the mutable and const keywords
+
+
+
+
+
+###########################################################################
+# Linting Report
+###########################################################################
+
+     I starting using clang-tidy's linting to clean up my code.
+     The following are issues it brought up and the solutions to resolve 
+     the error/warning
+
+     -Enums switched to uint8_t when int is larger than necessary 
+          > Ast.hh, Token.hh
+
+     -Greedy usage of template constructor taking forward reference (T&&)
+          Matches non-const objects
+          Use concepts i.e. "requires (!std::derived_from<std::decay_t<T>, NodeVariant>)"
+          > Ast.hh
+
+     -Using replace_back over push_back when adding new default object
+          > SymbolTableVisitor.cc
+
+     - Add [[nodiscard]] flag to various functions to ensure that
+          the return result does not get discarded when used.
+          > InvalidSyntaxException.hh, Visitor.hh
+
+
+###########################################################################

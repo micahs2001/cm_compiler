@@ -28,10 +28,6 @@ public:
   void
   visit (const AstNodePtr& node);
 
-  /*****************************************************************************/
-  // Default overloads traverse child nodes. Overrides can call the base
-  // overload to retain that traversal.
-
   virtual void
   operator() (const ProgramNode& node);
 
@@ -73,4 +69,15 @@ public:
 
   virtual void
   operator() (const NumExprNode& node);
+
+protected:
+  [[nodiscard]]
+  SourceLocation
+  currentLocation () const noexcept
+  {
+    return currentLocation_;
+  }
+
+private:
+  SourceLocation currentLocation_;
 };

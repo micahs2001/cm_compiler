@@ -1,0 +1,10 @@
+---
+# Enable all default bugprone, performance, and modern C++ upgrading rules
+Checks: 'bugprone-*,performance-*,modernize-*,-modernize-use-trailing-return-type'
+WarningsAsErrors: 'bugprone-*'
+
+# Fine-tune specific check configurations if needed
+CheckOptions:
+  - key:             readability-identifier-naming.VariableCase
+    value:           lower_case
+...

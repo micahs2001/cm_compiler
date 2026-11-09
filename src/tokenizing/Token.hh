@@ -1,10 +1,13 @@
 
 #pragma once
 
+#include <cstdint>
 #include <string>
 #include <string_view>
 
-enum class TokenType
+#include "SourceLocation.hh"
+
+enum class TokenType : uint8_t
 {
   // Keywords
   If,
@@ -48,8 +51,7 @@ struct Token
 {
   TokenType type { TokenType::Error };
   std::string lexeme;
-  size_t line { 1 };
-  size_t column { 1 };
+  SourceLocation location;
 };
 
 std::string_view
