@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "CompilerException.hh"
+#include "tokenizing/Token.hh"
 
 class InvalidSyntaxException : public CompilerException
 {
@@ -44,7 +45,8 @@ public:
 private:
   static std::string
   format_message (std::initializer_list<TokenType> expected,
-                  const std::string& got);
+                  const std::string& got,
+                  SourceLocation location);
 
   int line_;
   int column_;

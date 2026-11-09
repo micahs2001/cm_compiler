@@ -43,10 +43,12 @@ private:
   match (TokenType expected);
 
   // Check if the current token matches `type`.
+  [[nodiscard]]
   bool
   check (TokenType type) const;
 
   // Check if current token is in 'types'
+  [[nodiscard]]
   bool
   findToken (std::initializer_list<TokenType> types) const;
 

@@ -7,13 +7,15 @@
  *Function descriptors in header file
  *****************************************************************************/
 
+#include <array>
 #include <cctype>
 #include <string>
+#include <utility>
 
 #include "lexing/Scanner.hh"
 
 Scanner::Scanner (std::string source)
-    : source_ (source)
+    : source_ (std::move (source))
 {
 }
 
@@ -23,7 +25,9 @@ Scanner::scanNext ()
   skipWhitespaceAndComments ();
   if (peek () == EOF)
   {
-    return Token { TokenType::EndOfFile, "", location_ };
+    return Token { .type = TokenType::EndOfFile,
+                   .lexeme = "",
+                   .location = location_ };
   }
 
   const SourceLocation start = location_;
@@ -41,69 +45,109 @@ Scanner::scanNext ()
   switch (c)
   {
     case '+':
-      return Token { TokenType::Plus, "+", start };
+      return Token { .type = TokenType::Plus,
+                     .lexeme = "+",
+                     .location = start };
     case '-':
-      return Token { TokenType::Minus, "-", start };
+      return Token { .type = TokenType::Minus,
+                     .lexeme = "-",
+                     .location = start };
     case '*':
-      return Token { TokenType::Multiply, "*", start };
+      return Token { .type = TokenType::Multiply,
+                     .lexeme = "*",
+                     .location = start };
     case '/':
-      return Token { TokenType::Divide, "/", start };
+      return Token { .type = TokenType::Divide,
+                     .lexeme = "/",
+                     .location = start };
     case '<':
     {
       if (peek () == '=')
       {
         advance ();
-        return Token { TokenType::LessEqual, "<=", start };
+        return Token {
+          .type = TokenType::LessEqual, .lexeme = "<=", .location = start
+        };
       }
-      return Token { TokenType::Less, "<", start };
+      return Token { .type = TokenType::Less,
+                     .lexeme = "<",
+                     .location = start };
     }
     case '>':
     {
       if (peek () == '=')
       {
         advance ();
-        return Token { TokenType::GreaterEqual, ">=", start };
+        return Token {
+          .type = TokenType::GreaterEqual, .lexeme = ">=", .location = start
+        };
       }
-      return Token { TokenType::Greater, ">", start };
+      return Token { .type = TokenType::Greater,
+                     .lexeme = ">",
+                     .location = start };
     }
     case '=':
     {
       if (peek () == '=')
       {
         advance ();
-        return Token { TokenType::Equal, "==", start };
+        return Token {
+          .type = TokenType::Equal, .lexeme = "==", .location = start
+        };
       }
-      return Token { TokenType::Assign, "=", start };
+      return Token { .type = TokenType::Assign,
+                     .lexeme = "=",
+                     .location = start };
     }
     case '!':
     {
       if (peek () == '=')
       {
         advance ();
-        return Token { TokenType::NotEqual, "!=", start };
+        return Token {
+          .type = TokenType::NotEqual, .lexeme = "!=", .location = start
+        };
       }
       break;
     }
     case ';':
-      return Token { TokenType::Semi, ";", start };
+      return Token { .type = TokenType::Semi,
+                     .lexeme = ";",
+                     .location = start };
     case ',':
-      return Token { TokenType::Comma, ",", start };
+      return Token { .type = TokenType::Comma,
+                     .lexeme = ",",
+                     .location = start };
     case '(':
-      return Token { TokenType::LParen, "(", start };
+      return Token { .type = TokenType::LParen,
+                     .lexeme = "(",
+                     .location = start };
     case ')':
-      return Token { TokenType::RParen, ")", start };
+      return Token { .type = TokenType::RParen,
+                     .lexeme = ")",
+                     .location = start };
     case '[':
-      return Token { TokenType::LBrack, "[", start };
+      return Token { .type = TokenType::LBrack,
+                     .lexeme = "[",
+                     .location = start };
     case ']':
-      return Token { TokenType::RBrack, "]", start };
+      return Token { .type = TokenType::RBrack,
+                     .lexeme = "]",
+                     .location = start };
     case '{':
-      return Token { TokenType::LBrace, "{", start };
+      return Token { .type = TokenType::LBrace,
+                     .lexeme = "{",
+                     .location = start };
     case '}':
-      return Token { TokenType::RBrace, "}", start };
+      return Token { .type = TokenType::RBrace,
+                     .lexeme = "}",
+                     .location = start };
+    default:
+      break;
   }
-  return Token {
-    TokenType::Error, std::string (1, static_cast<char> (c)), start
-  };
+  return Token { .type = TokenType::Error,
+                 .lexeme = std::string (1, static_cast<char> (c)),
+                 .location = start };
 }
 
 int
@@ -210,15 +254,16 @@ Scanner::scanIdentifier ()
     s += static_cast<char> (advance ());
   }
 
-  std::string keywords[6] = { "if", "else", "int", "void", "return", "while" };
+  std::array<std::string, 6> keywords = { "if",   "else",   "int",
+                                          "void", "return", "while" };
   for (size_t i = 0; i < 6; ++i)
   {
     if (s == keywords[i])
     {
-      return Token { TokenType (i), s, start };
+      return Token { .type = TokenType (i), .lexeme = s, .location = start };
     }
   }
-  return Token { TokenType::Id, s, start };
+  return Token { .type = TokenType::Id, .lexeme = s, .location = start };
 }
 
 Token
@@ -230,7 +275,7 @@ Scanner::scanNumber ()
   {
     s += static_cast<char> (advance ());
   }
-  return Token { TokenType::Num, s, start };
+  return Token { .type = TokenType::Num, .lexeme = s, .location = start };
 }
 
 void

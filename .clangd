@@ -1,5 +1,5 @@
 CompileFlags:
   Add:
-    - -Isrc
+    - -I/home/students/mcschafe/435/cm_compiler/src
     - -std=c++26
     - -Wall

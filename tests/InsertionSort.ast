@@ -239,7 +239,7 @@ ProgramNode:
               CompoundStmtNode:
                 Statements:
                   ExprStmtNode:
-                    CallExprNode: output (int)
+                    CallExprNode: output (unknown-type)
                       Args:
                         VarExprNode: x (int)
                           Index:

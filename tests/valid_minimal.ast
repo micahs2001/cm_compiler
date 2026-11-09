@@ -1,0 +1,6 @@
+ProgramNode:
+  FunDeclNode: void main
+    Params:
+    Body:
+      CompoundStmtNode:
+        Statements:

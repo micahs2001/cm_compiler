@@ -1,6 +1,4 @@
-Team Members:  Micah Schafer,
-               Micah's Left Brain,
-               Micah's Right Brain
+Team Members:  Micah Schafer
 
 ###########################################################################
 # Non-lab-related changes

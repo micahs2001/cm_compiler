@@ -13,12 +13,8 @@
 #include <stdexcept>
 #include <string>
 
-#include "tokenizing/Token.hh"
-
 class CompilerException : public std::runtime_error
 {
 public:
   explicit CompilerException (const std::string& msg);
-  CompilerException (const std::string& msg, SourceLocation location);
-  explicit CompilerException (const std::string& msg, const Token& tok);
 };

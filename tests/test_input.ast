@@ -1,0 +1,30 @@
+ProgramNode:
+  VarDeclNode: int x
+  FunDeclNode: int double
+    Params:
+      ParamDeclNode: int y
+    Body:
+      CompoundStmtNode:
+        Local Decls:
+          VarDeclNode: int temp
+        Statements:
+          ExprStmtNode:
+            AssignExprNode:
+              LHS:
+                VarExprNode: temp (int)
+              RHS:
+                NumExprNode: 2
+          ReturnStmtNode:
+            BinaryExprNode (*):
+              VarExprNode: temp (int)
+              VarExprNode: y (int)
+  FunDeclNode: int main
+    Params:
+    Body:
+      CompoundStmtNode:
+        Statements:
+          ExprStmtNode:
+            CallExprNode: double (int)
+              Args:
+          ReturnStmtNode:
+            NumExprNode: 1

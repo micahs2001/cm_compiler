@@ -1,12 +1,19 @@
+#include <format>
+
 #include "InvalidTokenException.hh"
 
-InvalidTokenException::InvalidTokenException (const std::string& message)
-    : CompilerException (message)
+InvalidTokenException::InvalidTokenException (const std::string& message,
+                                              SourceLocation location)
+    : CompilerException (std::format ("Invalid Token [Line {}, Col {}]\n    {}",
+                                      location.line,
+                                      location.column,
+                                      message))
 {
 }
 
-InvalidTokenException::InvalidTokenException (const std::string& message,
-                                             SourceLocation location)
-    : CompilerException (message, location)
+InvalidTokenException::InvalidTokenException (SourceLocation location)
+    : CompilerException (std::format ("Invalid Token [Line {}, Col {}]",
+                                      location.line,
+                                      location.column))
 {
 }

@@ -30,6 +30,7 @@ public:
 
 private:
   // Return char at `cursor_` as an `int`, or EOF if at end.
+  [[nodiscard]]
   int
   peek () const;
 

@@ -1,3 +1,6 @@
+#include <format>
+
+#include "CompilerException.hh"
 #include "SemanticErrorException.hh"
 
 SemanticErrorException::SemanticErrorException (const std::string& message)
@@ -6,7 +9,11 @@ SemanticErrorException::SemanticErrorException (const std::string& message)
 }
 
 SemanticErrorException::SemanticErrorException (const std::string& message,
-                                               SourceLocation location)
-    : CompilerException (message, location)
+                                                SourceLocation location)
+    : CompilerException (
+        std::format ("Semantic Error [Line {}, Col {}]\n    {}",
+                     location.line,
+                     location.column,
+                     message))
 {
 }

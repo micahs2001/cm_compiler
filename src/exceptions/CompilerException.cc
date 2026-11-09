@@ -15,20 +15,6 @@
 #include "CompilerException.hh"
 
 CompilerException::CompilerException (const std::string& msg)
-    : std::runtime_error (msg)
-{
-}
-
-CompilerException::CompilerException (const std::string& msg,
-                                      SourceLocation location)
-    : std::runtime_error (std::format ("{} at line: {}, column {}",
-                                       msg,
-                                       location.line,
-                                       location.column))
-{
-}
-
-CompilerException::CompilerException (const std::string& msg, const Token& tok)
-    : CompilerException (msg, tok.location)
+    : std::runtime_error (std::format ("Compilation Error\n  {}", msg))
 {
 }

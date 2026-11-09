@@ -22,7 +22,7 @@
 // Parser Class Implementation
 
 Parser::Parser (Scanner scanner)
-    : scanner_ (scanner)
+    : scanner_ (std::move (scanner))
 {
 }
 
@@ -32,7 +32,6 @@ Parser::parse ()
   advance ();
   AstNodePtr prog = parseProgram ();
 
-  std::println ("\n\nValid!");
   return prog;
 }
 
@@ -58,7 +57,7 @@ Parser::advance ()
   toks_.push_back (save);
   current_ = scanner_.scanNext ();
   if (check (TokenType::Error))
-    throw InvalidTokenException ("Invalid Token", current_.location);
+    throw InvalidTokenException (current_.location);
   return save;
 }
 
@@ -69,7 +68,7 @@ Parser::match (TokenType expected)
   {
     throw InvalidSyntaxException (
       current_.location, { expected }, current_.lexeme);
-    return Token ();
+    return {};
   }
   return advance ();
 }
@@ -143,9 +142,11 @@ Parser::parseDecl ()
       std::vector<AstNodePtr> params = parseFullParams ();
       match (TokenType::RParen);
       AstNodePtr cmpstmt = parseCompoundStmt ();
-      return makeAstNode<FunDeclNode> (
-        identifier.location,
-        ty, std::move (idName), std::move (params), std::move (cmpstmt));
+      return makeAstNode<FunDeclNode> (identifier.location,
+                                       ty,
+                                       std::move (idName),
+                                       std::move (params),
+                                       std::move (cmpstmt));
     }
     default:
     {
@@ -273,8 +274,8 @@ Parser::parseCompoundStmt ()
   repeatUntil ([this, &stmtList] { stmtList.push_back (parseStatement ()); },
                { TokenType::RBrace });
   match (TokenType::RBrace);
-  return makeAstNode<CompoundStmtNode> (start, std::move (localDecls),
-                                        std::move (stmtList));
+  return makeAstNode<CompoundStmtNode> (
+    start, std::move (localDecls), std::move (stmtList));
 }
 
 AstNodePtr
@@ -407,9 +408,8 @@ Parser::parseExpression ()
         match (TokenType::Assign);
         AstNodePtr assignExpr = parseExpression ();
         const SourceLocation assignmentLocation = leftTree->location;
-        return makeAstNode<AssignExprNode> (assignmentLocation,
-                                            std::move (leftTree),
-                                            std::move (assignExpr));
+        return makeAstNode<AssignExprNode> (
+          assignmentLocation, std::move (leftTree), std::move (assignExpr));
       }
     }
     else
@@ -434,11 +434,10 @@ Parser::parseExpression ()
       // Build tree for first term
       Token operatorToken = match (current_.type);
       AstNodePtr rightTree = parseFactor ();
-      leftTree = makeAstNode<BinaryExprNode> (
-        operatorToken.location,
-        operatorToken.type,
-        std::move (leftTree),
-        std::move (rightTree));
+      leftTree = makeAstNode<BinaryExprNode> (operatorToken.location,
+                                              operatorToken.type,
+                                              std::move (leftTree),
+                                              std::move (rightTree));
     },
     { TokenType::Multiply, TokenType::Divide });
 
@@ -448,11 +447,10 @@ Parser::parseExpression ()
       // Build tree for first additive expression
       Token operatorToken = match (current_.type);
       AstNodePtr rightTree = parseTerm ();
-      leftTree = makeAstNode<BinaryExprNode> (
-        operatorToken.location,
-        operatorToken.type,
-        std::move (leftTree),
-        std::move (rightTree));
+      leftTree = makeAstNode<BinaryExprNode> (operatorToken.location,
+                                              operatorToken.type,
+                                              std::move (leftTree),
+                                              std::move (rightTree));
     },
     { TokenType::Plus, TokenType::Minus });
 
@@ -461,11 +459,10 @@ Parser::parseExpression ()
   {
     Token operatorToken = match (current_.type);
     AstNodePtr rightTree = parseAdditiveExpr ();
-    leftTree = makeAstNode<BinaryExprNode> (
-      operatorToken.location,
-      operatorToken.type,
-      std::move (leftTree),
-      std::move (rightTree));
+    leftTree = makeAstNode<BinaryExprNode> (operatorToken.location,
+                                            operatorToken.type,
+                                            std::move (leftTree),
+                                            std::move (rightTree));
   }
   return leftTree;
 }
@@ -487,11 +484,10 @@ Parser::parseAdditiveExpr ()
     {
       Token operatorToken = match (current_.type);
       AstNodePtr rightTree = parseTerm ();
-      leftTree = makeAstNode<BinaryExprNode> (
-        operatorToken.location,
-        operatorToken.type,
-        std::move (leftTree),
-        std::move (rightTree));
+      leftTree = makeAstNode<BinaryExprNode> (operatorToken.location,
+                                              operatorToken.type,
+                                              std::move (leftTree),
+                                              std::move (rightTree));
     },
     { TokenType::Plus, TokenType::Minus });
   return leftTree;
@@ -506,11 +502,10 @@ Parser::parseTerm ()
     {
       Token operatorToken = match (current_.type);
       AstNodePtr rightTree = parseFactor ();
-      leftTree = makeAstNode<BinaryExprNode> (
-        operatorToken.location,
-        operatorToken.type,
-        std::move (leftTree),
-        std::move (rightTree));
+      leftTree = makeAstNode<BinaryExprNode> (operatorToken.location,
+                                              operatorToken.type,
+                                              std::move (leftTree),
+                                              std::move (rightTree));
     },
     { TokenType::Multiply, TokenType::Divide });
   return leftTree;
@@ -547,9 +542,8 @@ Parser::parseFactor ()
           AstNodePtr varIndex;
           varIndex = parseExpression ();
           match (TokenType::RBrack);
-          return makeAstNode<VarExprNode> (identifier.location,
-                                           std::move (idName),
-                                           std::move (varIndex));
+          return makeAstNode<VarExprNode> (
+            identifier.location, std::move (idName), std::move (varIndex));
         }
         // Call Factor
         case TokenType::LParen:
@@ -557,9 +551,8 @@ Parser::parseFactor ()
           match (TokenType::LParen);
           std::vector<AstNodePtr> args = parseArgs ();
           match (TokenType::RParen);
-          return makeAstNode<CallExprNode> (identifier.location,
-                                            std::move (idName),
-                                            std::move (args));
+          return makeAstNode<CallExprNode> (
+            identifier.location, std::move (idName), std::move (args));
         }
         default:
           // Var Factor without index

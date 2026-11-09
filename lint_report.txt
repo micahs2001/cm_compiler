@@ -22,12 +22,9 @@ Suppressed 168 warnings (168 in non-user code).
 Use -header-filter=.* or leave it as default to display errors from all non-system headers. Use -system-headers to display errors from system headers as well.
 
 --- File: src/CMinus.cc ---
-179 warnings generated.
-/home/students/mcschafe/435/cm_compiler/src/CMinus.cc:27:67: warning: do not declare C-style arrays, use 'std::span' instead [modernize-avoid-c-arrays]
-   27 | consumeArgs (std::string& filename, std::string& input, int argc, char* argv[]);
-      |                                                                   ^~~~~~~~~~~~
-/home/students/mcschafe/435/cm_compiler/src/CMinus.cc:54:1: error: an exception may be thrown in function 'main' which should not throw exceptions [bugprone-exception-escape,-warnings-as-errors]
-   54 | main (int argc, char* argv[])
+170 warnings generated.
+/home/students/mcschafe/435/cm_compiler/src/CMinus.cc:61:1: error: an exception may be thrown in function 'main' which should not throw exceptions [bugprone-exception-escape,-warnings-as-errors]
+   61 | main (int argc, char* argv[])
       | ^
 /usr/bin/../lib64/gcc/x86_64-pc-linux-gnu/16/../../../../include/c++/16/format:243:5: note: frame #0: unhandled exception of type 'format_error' may be thrown in function '__throw_format_error' here
   243 |   { _GLIBCXX_THROW_OR_ABORT(format_error(__what)); }
@@ -59,248 +56,20 @@ Use -header-filter=.* or leave it as default to display errors from all non-syst
 /usr/bin/../lib64/gcc/x86_64-pc-linux-gnu/16/../../../../include/c++/16/print:164:7: note: frame #8: function 'println<>' calls function 'println<>' here
   164 |     { std::println(stdout, __fmt, std::forward<_Args>(__args)...); }
       |       ^
-/home/students/mcschafe/435/cm_compiler/src/CMinus.cc:99:9: note: frame #9: function 'consumeArgs' calls function 'println<>' here
-   99 |         std::println ("File inputted");
+/home/students/mcschafe/435/cm_compiler/src/CMinus.cc:108:9: note: frame #9: function 'consumeArgs' calls function 'println<>' here
+  108 |         std::println ("File inputted");
       |         ^
-/home/students/mcschafe/435/cm_compiler/src/CMinus.cc:59:24: note: frame #10: function 'main' calls function 'consumeArgs' here
-   59 |   unsigned flagDigit = consumeArgs (filename, input, argc, argv);
-      |                        ^
-/home/students/mcschafe/435/cm_compiler/src/CMinus.cc:79:67: warning: do not declare C-style arrays, use 'std::span' instead [modernize-avoid-c-arrays]
-   79 | consumeArgs (std::string& filename, std::string& input, int argc, char* argv[])
-      |                                                                   ^~~~~~~~~~~~
-/home/students/mcschafe/435/cm_compiler/src/CMinus.cc:84:16: error: narrowing conversion from 'unsigned int' to signed type 'int' is implementation-defined [bugprone-narrowing-conversions,-warnings-as-errors]
-   84 |     for (int i : std::views::iota (1u, (unsigned) argc))
-      |                ^
-/home/students/mcschafe/435/cm_compiler/src/CMinus.cc:84:40: warning: C-style casts are discouraged; use static_cast [modernize-avoid-c-style-cast]
-   84 |     for (int i : std::views::iota (1u, (unsigned) argc))
-      |                                        ^~~~~~~~~~     
-      |                                        static_cast<unsigned>( )
-/home/students/mcschafe/435/cm_compiler/src/CMinus.cc:120:10: warning: avoid repeating the return type from the declaration; use a braced initializer list instead [modernize-return-braced-init-list]
-  120 |   return std::string ((std::istreambuf_iterator<char> (file)),
-      |          ^
-/home/students/mcschafe/435/cm_compiler/src/CMinus.cc:142:3: warning: do not declare C-style arrays, use 'std::array' instead [modernize-avoid-c-arrays]
-  142 |   std::string toks[29] = { // Keywords
-      |   ^~~~~~~~~~~~~~~~~~~~
-/home/students/mcschafe/435/cm_compiler/src/lexing/Scanner.hh:33:3: warning: function 'peek' should be marked [[nodiscard]] [modernize-use-nodiscard]
-   33 |   int
+/home/students/mcschafe/435/cm_compiler/src/CMinus.cc:67:3: note: frame #10: function 'main' calls function 'consumeArgs' here
+   67 |   consumeArgs (flag, filename, input, argc, std::span<char*> (argv, argc));
       |   ^
-      |   [[nodiscard]] 
-/home/students/mcschafe/435/cm_compiler/src/parsing/Parser.hh:46:3: warning: function 'check' should be marked [[nodiscard]] [modernize-use-nodiscard]
-   46 |   bool
-      |   ^
-      |   [[nodiscard]] 
-/home/students/mcschafe/435/cm_compiler/src/parsing/Parser.hh:50:3: warning: function 'findToken' should be marked [[nodiscard]] [modernize-use-nodiscard]
-   50 |   bool
-      |   ^
-      |   [[nodiscard]] 
 Suppressed 169 warnings (169 in non-user code).
 Use -header-filter=.* or leave it as default to display errors from all non-system headers. Use -system-headers to display errors from system headers as well.
-2 warnings treated as errors
+1 warning treated as error
 
 --- File: src/lexing/Scanner.cc ---
-152 warnings generated.
-/home/students/mcschafe/435/cm_compiler/src/lexing/Scanner.cc:15:19: warning: pass by value and use std::move [modernize-pass-by-value]
-   12 | 
-   13 | #include "lexing/Scanner.hh"
-   14 | 
-   15 | Scanner::Scanner (std::string source)
-      |                   ^
-   16 |     : source_ (source)
-      |                      
-      |                std::move( )
-/home/students/mcschafe/435/cm_compiler/src/lexing/Scanner.cc:16:16: warning: parameter 'source' of type 'std::string' (aka 'basic_string<char>') is passed by value and only copied once; consider moving it to avoid unnecessary copies [performance-unnecessary-value-param]
-   12 | 
-   13 | #include "lexing/Scanner.hh"
-   14 | 
-   15 | Scanner::Scanner (std::string source)
-   16 |     : source_ (source)
-      |                ^     
-      |                std::move( )
-/home/students/mcschafe/435/cm_compiler/src/lexing/Scanner.cc:26:18: warning: use designated initializer list to initialize 'Token' [modernize-use-designated-initializers]
-   26 |     return Token { TokenType::EndOfFile, "", location_ };
-      |                  ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      |                    .type=                .lexeme= .location=
-src/tokenizing/Token.hh:50:1: note: aggregate type is defined here
-   50 | struct Token
-      | ^
-/home/students/mcschafe/435/cm_compiler/src/lexing/Scanner.cc:41:3: error: switching on non-enum value without default case may not cover all cases [bugprone-switch-missing-default-case,-warnings-as-errors]
-   41 |   switch (c)
-      |   ^
-/home/students/mcschafe/435/cm_compiler/src/lexing/Scanner.cc:44:20: warning: use designated initializer list to initialize 'Token' [modernize-use-designated-initializers]
-   44 |       return Token { TokenType::Plus, "+", start };
-      |                    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      |                      .type=           .lexeme= .location=
-src/tokenizing/Token.hh:50:1: note: aggregate type is defined here
-   50 | struct Token
-      | ^
-/home/students/mcschafe/435/cm_compiler/src/lexing/Scanner.cc:46:20: warning: use designated initializer list to initialize 'Token' [modernize-use-designated-initializers]
-   46 |       return Token { TokenType::Minus, "-", start };
-      |                    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      |                      .type=            .lexeme= .location=
-src/tokenizing/Token.hh:50:1: note: aggregate type is defined here
-   50 | struct Token
-      | ^
-/home/students/mcschafe/435/cm_compiler/src/lexing/Scanner.cc:48:20: warning: use designated initializer list to initialize 'Token' [modernize-use-designated-initializers]
-   48 |       return Token { TokenType::Multiply, "*", start };
-      |                    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      |                      .type=               .lexeme= .location=
-src/tokenizing/Token.hh:50:1: note: aggregate type is defined here
-   50 | struct Token
-      | ^
-/home/students/mcschafe/435/cm_compiler/src/lexing/Scanner.cc:50:20: warning: use designated initializer list to initialize 'Token' [modernize-use-designated-initializers]
-   50 |       return Token { TokenType::Divide, "/", start };
-      |                    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      |                      .type=             .lexeme= .location=
-src/tokenizing/Token.hh:50:1: note: aggregate type is defined here
-   50 | struct Token
-      | ^
-/home/students/mcschafe/435/cm_compiler/src/lexing/Scanner.cc:56:22: warning: use designated initializer list to initialize 'Token' [modernize-use-designated-initializers]
-   56 |         return Token { TokenType::LessEqual, "<=", start };
-      |                      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      |                        .type=                .lexeme= .location=
-src/tokenizing/Token.hh:50:1: note: aggregate type is defined here
-   50 | struct Token
-      | ^
-/home/students/mcschafe/435/cm_compiler/src/lexing/Scanner.cc:58:20: warning: use designated initializer list to initialize 'Token' [modernize-use-designated-initializers]
-   58 |       return Token { TokenType::Less, "<", start };
-      |                    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      |                      .type=           .lexeme= .location=
-src/tokenizing/Token.hh:50:1: note: aggregate type is defined here
-   50 | struct Token
-      | ^
-/home/students/mcschafe/435/cm_compiler/src/lexing/Scanner.cc:65:22: warning: use designated initializer list to initialize 'Token' [modernize-use-designated-initializers]
-   65 |         return Token { TokenType::GreaterEqual, ">=", start };
-      |                      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      |                        .type=                   .lexeme= .location=
-src/tokenizing/Token.hh:50:1: note: aggregate type is defined here
-   50 | struct Token
-      | ^
-/home/students/mcschafe/435/cm_compiler/src/lexing/Scanner.cc:67:20: warning: use designated initializer list to initialize 'Token' [modernize-use-designated-initializers]
-   67 |       return Token { TokenType::Greater, ">", start };
-      |                    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      |                      .type=              .lexeme= .location=
-src/tokenizing/Token.hh:50:1: note: aggregate type is defined here
-   50 | struct Token
-      | ^
-/home/students/mcschafe/435/cm_compiler/src/lexing/Scanner.cc:74:22: warning: use designated initializer list to initialize 'Token' [modernize-use-designated-initializers]
-   74 |         return Token { TokenType::Equal, "==", start };
-      |                      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      |                        .type=            .lexeme= .location=
-src/tokenizing/Token.hh:50:1: note: aggregate type is defined here
-   50 | struct Token
-      | ^
-/home/students/mcschafe/435/cm_compiler/src/lexing/Scanner.cc:76:20: warning: use designated initializer list to initialize 'Token' [modernize-use-designated-initializers]
-   76 |       return Token { TokenType::Assign, "=", start };
-      |                    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      |                      .type=             .lexeme= .location=
-src/tokenizing/Token.hh:50:1: note: aggregate type is defined here
-   50 | struct Token
-      | ^
-/home/students/mcschafe/435/cm_compiler/src/lexing/Scanner.cc:83:22: warning: use designated initializer list to initialize 'Token' [modernize-use-designated-initializers]
-   83 |         return Token { TokenType::NotEqual, "!=", start };
-      |                      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      |                        .type=               .lexeme= .location=
-src/tokenizing/Token.hh:50:1: note: aggregate type is defined here
-   50 | struct Token
-      | ^
-/home/students/mcschafe/435/cm_compiler/src/lexing/Scanner.cc:88:20: warning: use designated initializer list to initialize 'Token' [modernize-use-designated-initializers]
-   88 |       return Token { TokenType::Semi, ";", start };
-      |                    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      |                      .type=           .lexeme= .location=
-src/tokenizing/Token.hh:50:1: note: aggregate type is defined here
-   50 | struct Token
-      | ^
-/home/students/mcschafe/435/cm_compiler/src/lexing/Scanner.cc:90:20: warning: use designated initializer list to initialize 'Token' [modernize-use-designated-initializers]
-   90 |       return Token { TokenType::Comma, ",", start };
-      |                    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      |                      .type=            .lexeme= .location=
-src/tokenizing/Token.hh:50:1: note: aggregate type is defined here
-   50 | struct Token
-      | ^
-/home/students/mcschafe/435/cm_compiler/src/lexing/Scanner.cc:92:20: warning: use designated initializer list to initialize 'Token' [modernize-use-designated-initializers]
-   92 |       return Token { TokenType::LParen, "(", start };
-      |                    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      |                      .type=             .lexeme= .location=
-src/tokenizing/Token.hh:50:1: note: aggregate type is defined here
-   50 | struct Token
-      | ^
-/home/students/mcschafe/435/cm_compiler/src/lexing/Scanner.cc:94:20: warning: use designated initializer list to initialize 'Token' [modernize-use-designated-initializers]
-   94 |       return Token { TokenType::RParen, ")", start };
-      |                    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      |                      .type=             .lexeme= .location=
-src/tokenizing/Token.hh:50:1: note: aggregate type is defined here
-   50 | struct Token
-      | ^
-/home/students/mcschafe/435/cm_compiler/src/lexing/Scanner.cc:96:20: warning: use designated initializer list to initialize 'Token' [modernize-use-designated-initializers]
-   96 |       return Token { TokenType::LBrack, "[", start };
-      |                    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      |                      .type=             .lexeme= .location=
-src/tokenizing/Token.hh:50:1: note: aggregate type is defined here
-   50 | struct Token
-      | ^
-/home/students/mcschafe/435/cm_compiler/src/lexing/Scanner.cc:98:20: warning: use designated initializer list to initialize 'Token' [modernize-use-designated-initializers]
-   98 |       return Token { TokenType::RBrack, "]", start };
-      |                    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      |                      .type=             .lexeme= .location=
-src/tokenizing/Token.hh:50:1: note: aggregate type is defined here
-   50 | struct Token
-      | ^
-/home/students/mcschafe/435/cm_compiler/src/lexing/Scanner.cc:100:20: warning: use designated initializer list to initialize 'Token' [modernize-use-designated-initializers]
-  100 |       return Token { TokenType::LBrace, "{", start };
-      |                    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      |                      .type=             .lexeme= .location=
-src/tokenizing/Token.hh:50:1: note: aggregate type is defined here
-   50 | struct Token
-      | ^
-/home/students/mcschafe/435/cm_compiler/src/lexing/Scanner.cc:102:20: warning: use designated initializer list to initialize 'Token' [modernize-use-designated-initializers]
-  102 |       return Token { TokenType::RBrace, "}", start };
-      |                    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      |                      .type=             .lexeme= .location=
-src/tokenizing/Token.hh:50:1: note: aggregate type is defined here
-   50 | struct Token
-      | ^
-/home/students/mcschafe/435/cm_compiler/src/lexing/Scanner.cc:104:16: warning: use designated initializer list to initialize 'Token' [modernize-use-designated-initializers]
-  104 |   return Token {
-      |                ^
-  105 |     TokenType::Error, std::string (1, static_cast<char> (c)), start
-      |     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      |     .type=            .lexeme=                                .location=
-  106 |   };
-      |   ~
-src/tokenizing/Token.hh:50:1: note: aggregate type is defined here
-   50 | struct Token
-      | ^
-/home/students/mcschafe/435/cm_compiler/src/lexing/Scanner.cc:213:3: warning: do not declare C-style arrays, use 'std::array' instead [modernize-avoid-c-arrays]
-  213 |   std::string keywords[6] = { "if", "else", "int", "void", "return", "while" };
-      |   ^~~~~~~~~~~~~~~~~~~~~~~
-/home/students/mcschafe/435/cm_compiler/src/lexing/Scanner.cc:218:20: warning: use designated initializer list to initialize 'Token' [modernize-use-designated-initializers]
-  218 |       return Token { TokenType (i), s, start };
-      |                    ^~~~~~~~~~~~~~~~~~~~~~~~~~~
-      |                      .type=         .lexeme= .location=
-src/tokenizing/Token.hh:50:1: note: aggregate type is defined here
-   50 | struct Token
-      | ^
-/home/students/mcschafe/435/cm_compiler/src/lexing/Scanner.cc:221:16: warning: use designated initializer list to initialize 'Token' [modernize-use-designated-initializers]
-  221 |   return Token { TokenType::Id, s, start };
-      |                ^~~~~~~~~~~~~~~~~~~~~~~~~~~
-      |                  .type=         .lexeme= .location=
-src/tokenizing/Token.hh:50:1: note: aggregate type is defined here
-   50 | struct Token
-      | ^
-/home/students/mcschafe/435/cm_compiler/src/lexing/Scanner.cc:233:16: warning: use designated initializer list to initialize 'Token' [modernize-use-designated-initializers]
-  233 |   return Token { TokenType::Num, s, start };
-      |                ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      |                  .type=          .lexeme= .location=
-src/tokenizing/Token.hh:50:1: note: aggregate type is defined here
-   50 | struct Token
-      | ^
-src/lexing/Scanner.hh:33:3: warning: function 'peek' should be marked [[nodiscard]] [modernize-use-nodiscard]
-   33 |   int
-      |   ^
-      |   [[nodiscard]] 
+123 warnings generated.
 Suppressed 123 warnings (123 in non-user code).
 Use -header-filter=.* or leave it as default to display errors from all non-system headers. Use -system-headers to display errors from system headers as well.
-1 warning treated as error
 
 --- File: src/exceptions/InvalidTokenException.cc ---
 123 warnings generated.
@@ -323,53 +92,6 @@ Suppressed 172 warnings (172 in non-user code).
 Use -header-filter=.* or leave it as default to display errors from all non-system headers. Use -system-headers to display errors from system headers as well.
 
 --- File: src/parsing/Parser.cc ---
-174 warnings generated.
-/home/students/mcschafe/435/cm_compiler/src/parsing/Parser.cc:24:17: warning: pass by value and use std::move [modernize-pass-by-value]
-   14 | #include <vector>
-   15 | 
-   16 | #include "ast/Ast.hh"
-   17 | #include "exceptions/Exceptions.hh"
-   18 | #include "parsing/Parser.hh"
-   19 | #include "tokenizing/Token.hh"
-   20 | 
-   21 | /*****************************************************************************/
-   22 | // Parser Class Implementation
-   23 | 
-   24 | Parser::Parser (Scanner scanner)
-      |                 ^
-   25 |     : scanner_ (scanner)
-      |                        
-      |                 std::move( )
-/home/students/mcschafe/435/cm_compiler/src/parsing/Parser.cc:25:17: warning: parameter 'scanner' of type 'Scanner' is passed by value and only copied once; consider moving it to avoid unnecessary copies [performance-unnecessary-value-param]
-   14 | #include <vector>
-   15 | 
-   16 | #include "ast/Ast.hh"
-   17 | #include "exceptions/Exceptions.hh"
-   18 | #include "parsing/Parser.hh"
-   19 | #include "tokenizing/Token.hh"
-   20 | 
-   21 | /*****************************************************************************/
-   22 | // Parser Class Implementation
-   23 | 
-   24 | Parser::Parser (Scanner scanner)
-   25 |     : scanner_ (scanner)
-      |                 ^      
-      |                 std::move( )
-/home/students/mcschafe/435/cm_compiler/src/parsing/Parser.cc:72:12: warning: avoid repeating the return type from the declaration; use a braced initializer list instead [modernize-return-braced-init-list]
-   72 |     return Token ();
-      |            ^~~~~~~~
-      |            {}
-src/lexing/Scanner.hh:33:3: warning: function 'peek' should be marked [[nodiscard]] [modernize-use-nodiscard]
-   33 |   int
-      |   ^
-      |   [[nodiscard]] 
-src/parsing/Parser.hh:46:3: warning: function 'check' should be marked [[nodiscard]] [modernize-use-nodiscard]
-   46 |   bool
-      |   ^
-      |   [[nodiscard]] 
-src/parsing/Parser.hh:50:3: warning: function 'findToken' should be marked [[nodiscard]] [modernize-use-nodiscard]
-   50 |   bool
-      |   ^
-      |   [[nodiscard]] 
+168 warnings generated.
 Suppressed 168 warnings (168 in non-user code).
 Use -header-filter=.* or leave it as default to display errors from all non-system headers. Use -system-headers to display errors from system headers as well.

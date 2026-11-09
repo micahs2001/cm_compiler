@@ -1,5 +1,5 @@
 
-#include "tokenizing/Token.hh"
+#include "Token.hh"
 
 std::string_view
 tokenToString (TokenType type)

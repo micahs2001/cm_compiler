@@ -16,15 +16,15 @@ void
 printScopes (
   std::vector<std::unordered_map<std::string, Symbol>> vector_of_maps)
 {
-  for (size_t i = 0; i < vector_of_maps.size (); ++i)
-  {
-    std::cout << "Map at index " << i << ":\n";
-    for (const auto& [key, value] : vector_of_maps[i])
-    {
-      std::cout << "  " << key << " => " << "symbol" << "\n";
-    }
-    std::cout << "\n";
-  }
+  // for (size_t i = 0; i < vector_of_maps.size (); ++i)
+  // {
+  //   std::cout << "Map at index " << i << ":\n";
+  //   for (const auto& [key, value] : vector_of_maps[i])
+  //   {
+  //     std::cout << "  " << key << " => " << "symbol" << "\n";
+  //   }
+  //   std::cout << "\n";
+  // }
 }
 
 /**************************************************************************/
@@ -44,11 +44,11 @@ SymbolTableVisitor::SymbolTableVisitor ()
 void
 SymbolTableVisitor::operator() (const VarDeclNode& node)
 {
-  std::println ("Encountered a Var");
   if (not insertSymbol (node.identifier, &node))
   {
-    throw SemanticErrorException ("Previously Declared Variable",
-                                  currentLocation ());
+    throw SemanticErrorException (
+      std::format ("Variable \'{}\' declared more than once", node.identifier),
+      currentLocation ());
   }
 
   printScopes (scopeStack_);
@@ -57,8 +57,12 @@ SymbolTableVisitor::operator() (const VarDeclNode& node)
 void
 SymbolTableVisitor::operator() (const FunDeclNode& node)
 {
-  std::println ("Encountered a Fun");
-  insertSymbol (node.identifier, &node);
+  if (not insertSymbol (node.identifier, &node))
+  {
+    throw SemanticErrorException (
+      std::format ("Function \'{}\' declared more than once", node.identifier),
+      currentLocation ());
+  }
   printScopes (scopeStack_);
   enterScope ();
   Visitor::operator() (node);
@@ -68,8 +72,12 @@ SymbolTableVisitor::operator() (const FunDeclNode& node)
 void
 SymbolTableVisitor::operator() (const ParamDeclNode& node)
 {
-  std::println ("Encountered a Param");
-  insertSymbol (node.identifier, &node);
+  if (not insertSymbol (node.identifier, &node))
+  {
+    throw SemanticErrorException (
+      std::format ("Param \'{}\' declared more than once", node.identifier),
+      currentLocation ());
+  }
   printScopes (scopeStack_);
 }
 
@@ -79,7 +87,6 @@ SymbolTableVisitor::operator() (const ParamDeclNode& node)
 void
 SymbolTableVisitor::operator() (const IfStmtNode& node)
 {
-  std::println ("Encountered an if Stmt");
   Visitor::visit (node.condition);
   enterScope ();
   Visitor::visit (node.thenStmt);
@@ -94,7 +101,6 @@ SymbolTableVisitor::operator() (const IfStmtNode& node)
 void
 SymbolTableVisitor::operator() (const WhileStmtNode& node)
 {
-  std::println ("Encountered a while Stmt");
   visit (node.condition);
   enterScope ();
   visit (node.body);
@@ -118,6 +124,13 @@ SymbolTableVisitor::operator() (const VarExprNode& node)
     else if (std::holds_alternative<const ParamDeclNode*> (*var))
       node.declNode = std::get<const ParamDeclNode*> (*var);
   }
+  else
+  {
+    throw SemanticErrorException (
+      std::format ("Variable \'{}\' is not declared in this scope",
+                   node.identifier),
+      currentLocation ());
+  }
 
   Visitor::operator() (node);
 }
@@ -129,6 +142,13 @@ SymbolTableVisitor::operator() (const CallExprNode& node)
   if (var)
   {
     node.declNode = std::get<const FunDeclNode*> (*var);
+  }
+  else
+  {
+    throw SemanticErrorException (
+      std::format ("Function \'{}\' is not declared in this scope",
+                   node.identifier),
+      currentLocation ());
   }
 
   Visitor::operator() (node);

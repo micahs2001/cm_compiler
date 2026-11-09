@@ -1,0 +1,90 @@
+ProgramNode:
+  FunDeclNode: int classify
+    Params:
+      ParamDeclNode: int x
+    Body:
+      CompoundStmtNode:
+        Statements:
+          IfStmtNode:
+            Condition:
+              BinaryExprNode (<):
+                VarExprNode: x (int)
+                NumExprNode: 0
+            Then:
+              IfStmtNode:
+                Condition:
+                  BinaryExprNode (<):
+                    VarExprNode: x (int)
+                    BinaryExprNode (-):
+                      NumExprNode: 0
+                      NumExprNode: 100
+                Then:
+                  ReturnStmtNode:
+                    BinaryExprNode (-):
+                      NumExprNode: 0
+                      NumExprNode: 2
+                Else:
+                  ReturnStmtNode:
+                    BinaryExprNode (-):
+                      NumExprNode: 0
+                      NumExprNode: 1
+            Else:
+              IfStmtNode:
+                Condition:
+                  BinaryExprNode (==):
+                    VarExprNode: x (int)
+                    NumExprNode: 0
+                Then:
+                  ReturnStmtNode:
+                    NumExprNode: 0
+                Else:
+                  ReturnStmtNode:
+                    NumExprNode: 1
+  FunDeclNode: void main
+    Params:
+    Body:
+      CompoundStmtNode:
+        Local Decls:
+          VarDeclNode: int n
+        Statements:
+          ExprStmtNode:
+            AssignExprNode:
+              LHS:
+                VarExprNode: n (int)
+              RHS:
+                CallExprNode: input (int)
+                  Args:
+          WhileStmtNode:
+            Condition:
+              BinaryExprNode (!=):
+                VarExprNode: n (int)
+                NumExprNode: 0
+            Body:
+              CompoundStmtNode:
+                Statements:
+                  IfStmtNode:
+                    Condition:
+                      BinaryExprNode (>):
+                        CallExprNode: classify (int)
+                          Args:
+                            VarExprNode: n (int)
+                        NumExprNode: 0
+                    Then:
+                      ExprStmtNode:
+                        CallExprNode: output (unknown-type)
+                          Args:
+                            VarExprNode: n (int)
+                    Else:
+                      ExprStmtNode:
+                        CallExprNode: output (unknown-type)
+                          Args:
+                            BinaryExprNode (-):
+                              NumExprNode: 0
+                              VarExprNode: n (int)
+                  ExprStmtNode:
+                    AssignExprNode:
+                      LHS:
+                        VarExprNode: n (int)
+                      RHS:
+                        CallExprNode: input (int)
+                          Args:

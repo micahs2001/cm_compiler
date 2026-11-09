@@ -3,6 +3,7 @@
 #include <string>
 
 #include "CompilerException.hh"
+#include "tokenizing/SourceLocation.hh"
 
 class SemanticErrorException : public CompilerException
 {
