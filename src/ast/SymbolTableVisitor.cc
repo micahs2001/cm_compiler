@@ -47,7 +47,7 @@ SymbolTableVisitor::operator() (const VarDeclNode& node)
   if (not insertSymbol (node.identifier, &node))
   {
     throw SemanticErrorException (
-      std::format ("Variable \'{}\' declared more than once", node.identifier),
+      std::format ("Redeclaration of variable \'{}\'", node.identifier),
       currentLocation ());
   }
 
@@ -60,7 +60,7 @@ SymbolTableVisitor::operator() (const FunDeclNode& node)
   if (not insertSymbol (node.identifier, &node))
   {
     throw SemanticErrorException (
-      std::format ("Function \'{}\' declared more than once", node.identifier),
+      std::format ("Redeclaration of function \'{}\'", node.identifier),
       currentLocation ());
   }
   printScopes (scopeStack_);
@@ -75,7 +75,7 @@ SymbolTableVisitor::operator() (const ParamDeclNode& node)
   if (not insertSymbol (node.identifier, &node))
   {
     throw SemanticErrorException (
-      std::format ("Param \'{}\' declared more than once", node.identifier),
+      std::format ("Redeclaration of parameter \'{}\'", node.identifier),
       currentLocation ());
   }
   printScopes (scopeStack_);
