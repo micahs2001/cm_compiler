@@ -26,6 +26,7 @@
 /*****************************************************************************/
 // Forward Declarations
 
+// Parse input, setting flags on a flag object according to arguments
 void
 consumeArgs (CMFlags& flag,
              std::string& filename,
@@ -33,24 +34,32 @@ consumeArgs (CMFlags& flag,
              unsigned argc,
              std::span<char*> argv);
 
+// Takes a filename and returns a string containing the content of that file
 std::string
 fileToStr (const std::string& filename);
 
+// Reads from stdin, returning content after EOF token is entered
 std::string
 readFromIn ();
 
 std::string
 tokToStr (TokenType type);
 
+// Takes a filename and transforms is from a .cm name to a .ast name
 void
 replaceExt (std::string& filename);
 
+// Parses tokens contained in a completed scanner obj
+// Returns AST root node
 AstNodePtr
 parseTokens (Scanner scanner, CMFlags& flag);
 
+// Attaches variable symbols to an AST
 void
 attachSymbols (const AstNodePtr& node);
 
+// Prints an AST given a root node
+// Outputs a readable AST to filename
 void
 printAstFile (const AstNodePtr& node, std::string& filename);
 
@@ -58,17 +67,17 @@ printAstFile (const AstNodePtr& node, std::string& filename);
 // Main
 
 int
-main (int argc, char* argv[])
+main (int argc, char* argv[]) // NOLINT(bugprone-exception-escape)
 {
-  // Select input method based on if there was a file inputted
-  CMFlags flag;
-  std::string filename;
-  std::string input;
-  consumeArgs (flag, filename, input, argc, std::span<char*> (argv, argc));
-
-  // Input is string of file or input stream from terminal
   try
   {
+    CMFlags flag;
+    std::string filename;
+    std::string input;
+    // filename = Default.cm if no file input as arg
+    // input = file contents, or reads from terminal if no file input as org
+    consumeArgs (flag, filename, input, argc, std::span<char*> (argv, argc));
+
     Scanner scanner (input);
 
     AstNodePtr root = parseTokens (scanner, flag);
@@ -76,20 +85,30 @@ main (int argc, char* argv[])
     attachSymbols (root);
 
     printAstFile (root, filename);
+
+    std::println ("\n\nValid!");
+    return 0;
   }
   catch (CompilerException& e)
   {
-    std::println ("{}", e.what ());
-    exit (1);
+    std::println (std::cerr, "{}", e.what ());
+    return 1;
   }
-  std::println ("\n\nValid!");
+  catch (const std::exception& e)
+  {
+    std::println (std::cerr, "{}", e.what ());
+    return 1;
+  }
+  catch (...)
+  {
+    std::println (std::cerr, "Unknown Error Thrown");
+    return 1;
+  }
 }
 
 /*****************************************************************************/
 // Function Implementations
 
-// Consumes arguments
-// Valid flags set flagDigit
 void
 consumeArgs (CMFlags& flag,
              std::string& filename,

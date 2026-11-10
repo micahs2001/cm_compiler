@@ -1,9 +1,8 @@
 /******************************************************************************
  File Name:    Visitor.cc
- Description:  Print Visitor class implementation for CMinus language
+ Description:  Virtual Visitor class implementation for CMinus language
  Author:       Micah Schafer
- Date:         October 28, 2026
-
+ Date:         November 9, 2026
 
  *****************************************************************************/
 

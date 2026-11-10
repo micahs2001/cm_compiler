@@ -1,3 +1,13 @@
+/******************************************************************************
+ File Name:    SymbolTableVisitor.hh
+ Description:  Symbol Table Visitor class definition for CMinus language
+ Author:       Micah Schafer
+ Date:         November 9, 2026
+
+ Defines visitor operators for all grammar symbol nodes detailed in Ast.hh
+ that declare or use variables, parameters, or functions
+ Implements Visitor class
+ *****************************************************************************/
 #pragma once
 
 #include <optional>

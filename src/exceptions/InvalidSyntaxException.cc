@@ -9,7 +9,7 @@
 InvalidSyntaxException::InvalidSyntaxException (
   SourceLocation location,
   std::initializer_list<TokenType> expected,
-  std::string got)
+  std::string& got)
     : CompilerException (format_message (expected, got, location))
 {
 }

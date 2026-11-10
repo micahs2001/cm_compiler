@@ -2,8 +2,7 @@
  File Name:    PrintVisitor.cc
  Description:  Print Visitor class implementation for CMinus language
  Author:       Micah Schafer
- Date:         October 28, 2026
-
+ Date:         November 9, 2026
 
  *****************************************************************************/
 
@@ -209,6 +208,9 @@ PrintVisitor::operator() (const NumExprNode& node)
   printLine ("NumExprNode: {}", node.value);
 }
 
+// println wrapper help function that indents according to depth_ and prints
+// formatted string to out_ stream
+// Takes arguments in same way as std::println()
 template<typename... Args>
 void
 PrintVisitor::printLine (std::format_string<Args...> fmt, Args&&... args)

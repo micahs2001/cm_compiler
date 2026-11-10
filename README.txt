@@ -1,11 +1,31 @@
 Team Members:  Micah Schafer
 
+> make 
+     Builds program
+
+> make clean 
+     Removes generated files
+
+> make test TEST_DIR=<path-to-test-dir>
+     Runs program on all files in directory <path-to-test-dir>
+
+> make lint 
+     
+
+
+
+
 ###########################################################################
 # Non-lab-related changes
 ###########################################################################
 
 - Adjusted scanner to output correct locations by capturing location at
 correct time.
+
+- Reformatted exception hierarchy to be more consistent.
+
+- Rolled line/column numbers into a SourceLocation struct that's easily passable
+     between layers to be able to print location in errors for any layer.
 
 ###########################################################################
 # Implementation Issues and Solutions
@@ -53,7 +73,6 @@ correct time.
 
 
 
-
 ###########################################################################
 # Linting Report
 ###########################################################################
@@ -76,6 +95,8 @@ correct time.
      - Add [[nodiscard]] flag to various functions to ensure that
           the return result does not get discarded when used.
           > InvalidSyntaxException.hh, Visitor.hh
+
+     - Replaced C-style structures with modern approaches
 
 
 ###########################################################################

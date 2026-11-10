@@ -12,7 +12,7 @@ class InvalidSyntaxException : public CompilerException
 public:
   InvalidSyntaxException (SourceLocation location,
                           std::initializer_list<TokenType> expected,
-                          std::string got);
+                          std::string& got);
 
   [[nodiscard]]
   int
