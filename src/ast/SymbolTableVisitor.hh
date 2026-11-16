@@ -1,3 +1,13 @@
+/******************************************************************************
+ File Name:    SymbolTableVisitor.hh
+ Description:  Symbol Table Visitor class definition for CMinus language
+ Author:       Micah Schafer
+ Date:         November 9, 2026
+
+ Defines visitor operators for all grammar symbol nodes detailed in Ast.hh
+ that declare or use variables, parameters, or functions
+ Implements Visitor class
+ *****************************************************************************/
 #pragma once
 
 #include <optional>
@@ -6,6 +16,7 @@
 #include <variant>
 #include <vector>
 
+#include "Ast.hh"
 #include "Visitor.hh"
 
 // Symbols stored in the table (Variables, Parameters, Functions).
@@ -32,6 +43,12 @@ public:
   void
   operator() (const WhileStmtNode& node) override;
 
+  void
+  operator() (const VarExprNode& node) override;
+
+  void
+  operator() (const CallExprNode& node) override;
+
 private:
   void
   enterScope ();
@@ -42,7 +59,7 @@ private:
   bool
   insertSymbol (const std::string& name, Symbol sym);
 
-  std::optional<Symbol>
+  const std::optional<Symbol>
   lookupSymbol (const std::string& name) const;
 
 private:

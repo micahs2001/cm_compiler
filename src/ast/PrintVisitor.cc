@@ -2,8 +2,7 @@
  File Name:    PrintVisitor.cc
  Description:  Print Visitor class implementation for CMinus language
  Author:       Micah Schafer
- Date:         October 28, 2026
-
+ Date:         November 9, 2026
 
  *****************************************************************************/
 
@@ -17,7 +16,7 @@
 #include "PrintVisitor.hh"
 
 /*****************************************************************************/
-// Parser Class Implementation
+// Print Visitor Class Implementation
 
 PrintVisitor::PrintVisitor (std::ostream& out)
     : out_ (out)
@@ -176,7 +175,9 @@ PrintVisitor::operator() (const BinaryExprNode& node)
 void
 PrintVisitor::operator() (const VarExprNode& node)
 {
-  printLine ("VarExprNode: {}", node.identifier);
+  auto type =
+    std::visit ([&] (const auto& node) { return node->type; }, node.declNode);
+  printLine ("VarExprNode: {} ({})", node.identifier, typeSpecToString (type));
   if (node.index)
   {
     ++depth_;
@@ -190,7 +191,9 @@ PrintVisitor::operator() (const VarExprNode& node)
 void
 PrintVisitor::operator() (const CallExprNode& node)
 {
-  printLine ("CallExprNode: {}", node.identifier);
+  printLine ("CallExprNode: {} ({})",
+             node.identifier,
+             typeSpecToString (node.declNode->returnType));
   ++depth_;
   printLine ("Args:");
   ++depth_;
@@ -205,11 +208,14 @@ PrintVisitor::operator() (const NumExprNode& node)
   printLine ("NumExprNode: {}", node.value);
 }
 
+// println wrapper help function that indents according to depth_ and prints
+// formatted string to out_ stream
+// Takes arguments in same way as std::println()
 template<typename... Args>
 void
 PrintVisitor::printLine (std::format_string<Args...> fmt, Args&&... args)
 {
-  for (int _ : std::views::iota (0u, (unsigned) depth_))
+  for (unsigned _ : std::views::iota (0u, depth_))
   {
     out_ << "  ";
   }

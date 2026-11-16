@@ -1,11 +1,19 @@
-#include <stdexcept>
+#include <format>
 
-class InvalidTokenException : public std::runtime_error
+#include "InvalidTokenException.hh"
+
+InvalidTokenException::InvalidTokenException (const std::string& message,
+                                              SourceLocation location)
+    : CompilerException (std::format ("Invalid Token [Line {}, Col {}]\n    {}",
+                                      location.line,
+                                      location.column,
+                                      message))
 {
-public:
-  // Pass the message to the base class constructor
-  explicit InvalidTokenException (const std::string& message)
-      : std::runtime_error (message)
-  {
-  }
-};
+}
+
+InvalidTokenException::InvalidTokenException (SourceLocation location)
+    : CompilerException (std::format ("Invalid Token [Line {}, Col {}]",
+                                      location.line,
+                                      location.column))
+{
+}

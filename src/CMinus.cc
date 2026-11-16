@@ -8,38 +8,58 @@
 
 /*****************************************************************************/
 // Includes
+#include "CMFlags.hh"
 #include "ast/PrintVisitor.hh"
 #include "ast/SymbolTableVisitor.hh"
 #include "exceptions/Exceptions.hh"
 #include "lexing/Scanner.hh"
 #include "parsing/Parser.hh"
 
+#include <cstring>
 #include <fstream>
 #include <iostream>
 #include <print>
+#include <ranges>
+#include <span>
 #include <string>
 
 /*****************************************************************************/
 // Forward Declarations
 
-unsigned
-consumeArgs (std::string& filename, std::string& input, int argc, char* argv[]);
+// Parse input, setting flags on a flag object according to arguments
+void
+consumeArgs (CMFlags& flag,
+             std::string& filename,
+             std::string& input,
+             unsigned argc,
+             std::span<char*> argv);
 
+// Takes a filename and returns a string containing the content of that file
 std::string
 fileToStr (const std::string& filename);
 
+// Reads from stdin, returning content after EOF token is entered
 std::string
 readFromIn ();
 
 std::string
 tokToStr (TokenType type);
 
+// Takes a filename and transforms is from a .cm name to a .ast name
 void
 replaceExt (std::string& filename);
 
+// Parses tokens contained in a completed scanner obj
+// Returns AST root node
 AstNodePtr
-parseTokens (Scanner scanner, unsigned flagDigit);
+parseTokens (Scanner scanner, CMFlags& flag);
 
+// Attaches variable symbols to an AST
+void
+attachSymbols (const AstNodePtr& node);
+
+// Prints an AST given a root node
+// Outputs a readable AST to filename
 void
 printAstFile (const AstNodePtr& node, std::string& filename);
 
@@ -47,54 +67,72 @@ printAstFile (const AstNodePtr& node, std::string& filename);
 // Main
 
 int
-main (int argc, char* argv[])
+main (int argc, char* argv[]) // NOLINT(bugprone-exception-escape)
 {
-  // Select input method based on if there was a file inputted
-  std::string filename;
-  std::string input;
-  unsigned flagDigit = consumeArgs (filename, input, argc, argv);
+  try
+  {
+    CMFlags flag;
+    std::string filename;
+    std::string input;
+    // filename = Default.cm if no file input as arg
+    // input = file contents, or reads from terminal if no file input as org
+    consumeArgs (flag, filename, input, argc, std::span<char*> (argv, argc));
 
-  // Input is string of file or input stream from terminal
-  Scanner scanner (input);
+    Scanner scanner (input);
 
-  AstNodePtr root = parseTokens (scanner, flagDigit);
+    AstNodePtr root = parseTokens (scanner, flag);
 
-  // Tree is printed to file by default right now.
-  // Later will be producible with flag
+    attachSymbols (root);
 
-  SymbolTableVisitor prtvisit;
-  prtvisit.visit (root);
-  // printAstFile (root, filename);
+    printAstFile (root, filename);
+
+    std::println ("\n\nValid!");
+    return 0;
+  }
+  catch (CompilerException& e)
+  {
+    std::println (std::cerr, "{}", e.what ());
+    return 1;
+  }
+  catch (const std::exception& e)
+  {
+    std::println (std::cerr, "{}", e.what ());
+    return 1;
+  }
+  catch (...)
+  {
+    std::println (std::cerr, "Unknown Error Thrown");
+    return 1;
+  }
 }
 
 /*****************************************************************************/
 // Function Implementations
 
-// Consumes arguments
-// Valid flags set flagDigit
-unsigned
-consumeArgs (std::string& filename, std::string& input, int argc, char* argv[])
+void
+consumeArgs (CMFlags& flag,
+             std::string& filename,
+             std::string& input,
+             unsigned argc,
+             std::span<char*> argv)
 {
-  unsigned flagDigit = 0;
   if (argc > 1)
   {
-    for (int i : std::views::iota (1u, (unsigned) argc))
+    for (unsigned i : std::views::iota (1u, argc))
     {
       std::string_view arg (argv[i]);
       if (arg == "-tokens")
-        // Set second digit -> X1X
-        flagDigit |= 2;
+        flag.printTokens = true;
       else if (arg == "-ast")
-        // Set third digit -> 1XX
-        flagDigit |= 4;
+        flag.printAst = true;
       else if (i + 1 == argc)
       {
-        // Assume filename, set first digit -> X1X
-        flagDigit |= 1;
+        // Assume filename
+        flag.fileInputted = true;
         filename = arg;
         input = fileToStr (filename);
         std::println ("File inputted");
-        return flagDigit;
+        return;
       }
       else
       {
@@ -105,7 +143,6 @@ consumeArgs (std::string& filename, std::string& input, int argc, char* argv[])
   }
   filename = "Default.cm";
   input = readFromIn ();
-  return flagDigit;
 }
 
 // Convert a file to a string for input
@@ -114,8 +151,8 @@ fileToStr (const std::string& filename)
 {
   std::ifstream file (filename);
 
-  return std::string ((std::istreambuf_iterator<char> (file)),
-                      std::istreambuf_iterator<char> ());
+  return { (std::istreambuf_iterator<char> (file)),
+           std::istreambuf_iterator<char> () };
 }
 
 // Read input from terminal
@@ -136,42 +173,42 @@ readFromIn ()
 std::string
 tokToStr (TokenType type)
 {
-  std::string toks[29] = { // Keywords
-                           "If",
-                           "Else",
-                           "Int",
-                           "Void",
-                           "Return",
-                           "While",
-                           // Operators
-                           "Plus",
-                           "Minus",
-                           "Multiply",
-                           "Divide",
-                           "Less",
-                           "LessEqual",
-                           "Greater",
-                           "GreaterEqual",
-                           "Equal",
-                           "NotEqual",
-                           "Assign",
-                           // Delimiters/Punctuators
-                           "Semi",
-                           "Comma",
-                           "LParen",
-                           "RParen",
-                           // Bracks are [ and ]
-                           "LBrack",
-                           "RBrack",
-                           // Braces are { and }
-                           "LBrace",
-                           "RBrace",
-                           // Identifiers and Literals
-                           "Id",
-                           "Num",
-                           // Special
-                           "EndOfFile",
-                           "Error"
+  std::array<std::string, 29> toks = { // Keywords
+                                       "If",
+                                       "Else",
+                                       "Int",
+                                       "Void",
+                                       "Return",
+                                       "While",
+                                       // Operators
+                                       "Plus",
+                                       "Minus",
+                                       "Multiply",
+                                       "Divide",
+                                       "Less",
+                                       "LessEqual",
+                                       "Greater",
+                                       "GreaterEqual",
+                                       "Equal",
+                                       "NotEqual",
+                                       "Assign",
+                                       // Delimiters/Punctuators
+                                       "Semi",
+                                       "Comma",
+                                       "LParen",
+                                       "RParen",
+                                       // Bracks are [ and ]
+                                       "LBrack",
+                                       "RBrack",
+                                       // Braces are { and }
+                                       "LBrace",
+                                       "RBrace",
+                                       // Identifiers and Literals
+                                       "Id",
+                                       "Num",
+                                       // Special
+                                       "EndOfFile",
+                                       "Error"
   };
   return toks[static_cast<int> (type)];
 }
@@ -191,22 +228,24 @@ replaceExt (std::string& filename)
 // Given an input scanner containing tokenization for program,
 //  Return pointer to root of parsed AST tree
 AstNodePtr
-parseTokens (Scanner scanner, unsigned flagDigit)
+parseTokens (Scanner scanner, CMFlags& flag)
 {
   Parser parser (std::move (scanner));
-  try
-  {
-    auto tree = parser.parse ();
-    // If token digit is set, print tokens
-    if (flagDigit & 2)
-      parser.printTokens (std::cout);
-    return tree;
-  }
-  catch (InvalidSyntaxException& e)
-  {
-    std::println ("{}", e.what ());
-  }
+
+  auto tree = parser.parse ();
+  // If token digit is set, print tokens
+  if (flag.printTokens)
+    parser.printTokens (std::cout);
+  return tree;
+
   return nullptr;
+}
+
+void
+attachSymbols (const AstNodePtr& node)
+{
+  SymbolTableVisitor visitor;
+  visitor.visit (node);
 }
 
 // Given an input AST root node and filename,

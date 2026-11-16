@@ -11,6 +11,7 @@
 
 #pragma once
 
+#include "tokenizing/SourceLocation.hh"
 #include "tokenizing/Token.hh"
 
 #include <string>
@@ -29,21 +30,18 @@ public:
 
 private:
   // Return char at `cursor_` as an `int`, or EOF if at end.
+  [[nodiscard]]
   int
   peek () const;
 
   // Like `peek`, but advance `cursor_`.
-  //   Update `line_` and `column_` as necessary.
+  //   Update the source location as necessary.
   int
   advance ();
 
   // Look ahead one character without advancing cursor_
   int
   lookAhead ();
-
-  // Returns true if the character is a vertical whitespace character
-  bool
-  isVerticalSpace (int c);
 
   // Returns true if the character is a uppercase or lowercase letter
   bool
@@ -85,6 +83,5 @@ private:
 private:
   std::string source_;
   size_t cursor_ { 0 };
-  size_t line_ { 1 };
-  size_t column_ { 1 };
+  SourceLocation location_;
 };

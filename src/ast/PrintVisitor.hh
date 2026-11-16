@@ -2,10 +2,11 @@
  File Name:    PrintVisitor.hh
  Description:  Print Visitor class definition for CMinus language
  Author:       Micah Schafer
- Date:         October 28, 2026
+ Date:         November 9, 2026
 
  Defines visitor operators for all grammar symbol nodes detailed in Ast.hh
  Calling this.visit(ASTNodePtr) returns AST tree rooted at that ptr
+ Implements Visitor class
  *****************************************************************************/
 
 /*****************************************************************************/
@@ -82,5 +83,5 @@ private:
   typeSpecToString (TypeSpecifier type);
 
   std::ostream& out_;
-  int depth_ { 0 };
+  unsigned depth_ { 0 };
 };

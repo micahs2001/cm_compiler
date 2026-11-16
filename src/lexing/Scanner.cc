@@ -7,13 +7,15 @@
  *Function descriptors in header file
  *****************************************************************************/
 
+#include <array>
 #include <cctype>
 #include <string>
+#include <utility>
 
 #include "lexing/Scanner.hh"
 
 Scanner::Scanner (std::string source)
-    : source_ (source)
+    : source_ (std::move (source))
 {
 }
 
@@ -23,9 +25,12 @@ Scanner::scanNext ()
   skipWhitespaceAndComments ();
   if (peek () == EOF)
   {
-    return Token { TokenType::EndOfFile, "", line_, column_ };
+    return Token { .type = TokenType::EndOfFile,
+                   .lexeme = "",
+                   .location = location_ };
   }
 
+  const SourceLocation start = location_;
   int c = peek ();
   if (isLetter (c))
   {
@@ -40,69 +45,109 @@ Scanner::scanNext ()
   switch (c)
   {
     case '+':
-      return Token { TokenType::Plus, "+", line_, column_ };
+      return Token { .type = TokenType::Plus,
+                     .lexeme = "+",
+                     .location = start };
     case '-':
-      return Token { TokenType::Minus, "-", line_, column_ };
+      return Token { .type = TokenType::Minus,
+                     .lexeme = "-",
+                     .location = start };
     case '*':
-      return Token { TokenType::Multiply, "*", line_, column_ };
+      return Token { .type = TokenType::Multiply,
+                     .lexeme = "*",
+                     .location = start };
     case '/':
-      return Token { TokenType::Divide, "/", line_, column_ };
+      return Token { .type = TokenType::Divide,
+                     .lexeme = "/",
+                     .location = start };
     case '<':
     {
       if (peek () == '=')
       {
         advance ();
-        return Token { TokenType::LessEqual, "<=", line_, column_ };
+        return Token {
+          .type = TokenType::LessEqual, .lexeme = "<=", .location = start
+        };
       }
-      return Token { TokenType::Less, "<", line_, column_ };
+      return Token { .type = TokenType::Less,
+                     .lexeme = "<",
+                     .location = start };
     }
     case '>':
     {
       if (peek () == '=')
       {
         advance ();
-        return Token { TokenType::GreaterEqual, ">=", line_, column_ };
+        return Token {
+          .type = TokenType::GreaterEqual, .lexeme = ">=", .location = start
+        };
       }
-      return Token { TokenType::Greater, ">", line_, column_ };
+      return Token { .type = TokenType::Greater,
+                     .lexeme = ">",
+                     .location = start };
     }
     case '=':
     {
       if (peek () == '=')
       {
         advance ();
-        return Token { TokenType::Equal, "==", line_, column_ };
+        return Token {
+          .type = TokenType::Equal, .lexeme = "==", .location = start
+        };
       }
-      return Token { TokenType::Assign, "=", line_, column_ };
+      return Token { .type = TokenType::Assign,
+                     .lexeme = "=",
+                     .location = start };
     }
     case '!':
     {
       if (peek () == '=')
       {
         advance ();
-        return Token { TokenType::NotEqual, "!=", line_, column_ };
+        return Token {
+          .type = TokenType::NotEqual, .lexeme = "!=", .location = start
+        };
       }
       break;
     }
     case ';':
-      return Token { TokenType::Semi, ";", line_, column_ };
+      return Token { .type = TokenType::Semi,
+                     .lexeme = ";",
+                     .location = start };
     case ',':
-      return Token { TokenType::Comma, ",", line_, column_ };
+      return Token { .type = TokenType::Comma,
+                     .lexeme = ",",
+                     .location = start };
     case '(':
-      return Token { TokenType::LParen, "(", line_, column_ };
+      return Token { .type = TokenType::LParen,
+                     .lexeme = "(",
+                     .location = start };
     case ')':
-      return Token { TokenType::RParen, ")", line_, column_ };
+      return Token { .type = TokenType::RParen,
+                     .lexeme = ")",
+                     .location = start };
     case '[':
-      return Token { TokenType::LBrack, "[", line_, column_ };
+      return Token { .type = TokenType::LBrack,
+                     .lexeme = "[",
+                     .location = start };
     case ']':
-      return Token { TokenType::RBrack, "]", line_, column_ };
+      return Token { .type = TokenType::RBrack,
+                     .lexeme = "]",
+                     .location = start };
     case '{':
-      return Token { TokenType::LBrace, "{", line_, column_ };
+      return Token { .type = TokenType::LBrace,
+                     .lexeme = "{",
+                     .location = start };
     case '}':
-      return Token { TokenType::RBrace, "}", line_, column_ };
+      return Token { .type = TokenType::RBrace,
+                     .lexeme = "}",
+                     .location = start };
+    default:
+      break;
   }
-  return Token {
-    TokenType::Error, std::string (1, static_cast<char> (c)), line_, column_
-  };
+  return Token { .type = TokenType::Error,
+                 .lexeme = std::string (1, static_cast<char> (c)),
+                 .location = start };
 }
 
 int
@@ -123,7 +168,15 @@ Scanner::advance ()
 {
   int c = peek ();
   ++cursor_;
-  ++column_;
+  if (c == '\n')
+  {
+    ++location_.line;
+    location_.column = 1;
+  }
+  else
+  {
+    ++location_.column;
+  }
   return c;
 }
 
@@ -138,12 +191,6 @@ Scanner::lookAhead ()
   {
     return EOF;
   }
-}
-
-bool
-Scanner::isVerticalSpace (int c)
-{
-  return (c > 9 && c < 14);
 }
 
 bool
@@ -167,11 +214,6 @@ Scanner::skipWhitespaceAndComments ()
     int c = peek ();
     if (c != EOF && std::isspace (static_cast<char> (c)))
     {
-      if (isVerticalSpace (c))
-      {
-        ++line_;
-        column_ = 0;
-      }
       advance ();
     }
     // Skip comments starting with /* and ending with */
@@ -205,39 +247,40 @@ Scanner::skipCommentBlock ()
 Token
 Scanner::scanIdentifier ()
 {
+  SourceLocation start = location_;
   std::string s;
-  size_t curCol = column_;
   while (peek () != EOF && isLetter (peek ()))
   {
     s += static_cast<char> (advance ());
   }
 
-  std::string keywords[6] = { "if", "else", "int", "void", "return", "while" };
+  std::array<std::string, 6> keywords = { "if",   "else",   "int",
+                                          "void", "return", "while" };
   for (size_t i = 0; i < 6; ++i)
   {
     if (s == keywords[i])
     {
-      return Token { TokenType (i), s, line_, curCol };
+      return Token { .type = TokenType (i), .lexeme = s, .location = start };
     }
   }
-  return Token { TokenType::Id, s, line_, curCol };
+  return Token { .type = TokenType::Id, .lexeme = s, .location = start };
 }
 
 Token
 Scanner::scanNumber ()
 {
+  SourceLocation start = location_;
   std::string s;
-  size_t curCol = column_;
   while (peek () != EOF && isNumber (peek ()))
   {
     s += static_cast<char> (advance ());
   }
-  return Token { TokenType::Num, s, line_, curCol };
+  return Token { .type = TokenType::Num, .lexeme = s, .location = start };
 }
 
 void
 Scanner::putBack ()
 {
   --cursor_;
-  --column_;
+  --location_.column;
 }

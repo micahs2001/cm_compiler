@@ -1,11 +1,11 @@
 /******************************************************************************
- File Name:    PrintVisitor.hh
- Description:  Print Visitor class definition for CMinus language
+ File Name:    Visitor.hh
+ Description:  Virtual Visitor class definition for CMinus language
  Author:       Micah Schafer
- Date:         October 28, 2026
+ Date:         November 9, 2026
 
- Defines visitor operators for all grammar symbol nodes detailed in Ast.hh
- Calling this.visit(ASTNodePtr) returns AST tree rooted at that ptr
+ Defines default traversal visitor operators for all grammar symbol nodes
+ detailed in Ast.hh
  *****************************************************************************/
 
 /*****************************************************************************/
@@ -13,6 +13,7 @@
 #pragma once
 
 #include "Ast.hh"
+#include "exceptions/Exceptions.hh"
 
 /*****************************************************************************/
 // Visitor Class Definition
@@ -26,10 +27,6 @@ public:
   // Call with the root node to traverse the AST.
   void
   visit (const AstNodePtr& node);
-
-  /*****************************************************************************/
-  // Default overloads traverse child nodes. Overrides can call the base
-  // overload to retain that traversal.
 
   virtual void
   operator() (const ProgramNode& node);
@@ -72,4 +69,15 @@ public:
 
   virtual void
   operator() (const NumExprNode& node);
+
+protected:
+  [[nodiscard]]
+  SourceLocation
+  currentLocation () const noexcept
+  {
+    return currentLocation_;
+  }
+
+private:
+  SourceLocation currentLocation_;
 };
