@@ -1,0 +1,17 @@
+ProgramNode:
+  VarDeclNode: int x
+  FunDeclNode: void main
+    Params:
+    Body:
+      CompoundStmtNode:
+        Local Decls:
+          VarDeclNode: int size[5]
+          VarDeclNode: int i
+          VarDeclNode: int num
+        Statements:
+          ExprStmtNode:
+            AssignExprNode:
+              LHS:
+                VarExprNode: size (int)
+              RHS:
+                NumExprNode: 20

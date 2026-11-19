@@ -10,8 +10,10 @@
 // Includes
 #include "CMFlags.hh"
 #include "ast/PrintVisitor.hh"
+#include "ast/SemanticAnalysisVisitor.hh"
 #include "ast/SymbolTableVisitor.hh"
 #include "exceptions/Exceptions.hh"
+#include "exceptions/SemanticErrorException.hh"
 #include "lexing/Scanner.hh"
 #include "parsing/Parser.hh"
 
@@ -85,6 +87,25 @@ main (int argc, char* argv[]) // NOLINT(bugprone-exception-escape)
     attachSymbols (root);
 
     printAstFile (root, filename);
+
+    SemanticAnalysisVisitor visitor (std::cerr);
+
+    visitor.visit (root);
+    if (not visitor.getErrors ().empty ())
+    {
+      for (const std::exception_ptr& eptr : visitor.getErrors ())
+      {
+        try
+        {
+          std::rethrow_exception (eptr);
+        }
+        catch (CompilerException& e)
+        {
+          std::println (std::cerr, "{}", e.what ());
+        }
+      }
+      exit (1);
+    }
 
     std::println ("\n\nValid!");
     return 0;
